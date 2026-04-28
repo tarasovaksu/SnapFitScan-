@@ -1,0 +1,3071 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SnapFitScan — трекер калорий</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#09090b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SnapFitScan">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #22c55e;
+    --green-dim: #16a34a;
+    --bg: #09090b;
+    --surface: #18181b;
+    --surface2: #27272a;
+    --border: #3f3f46;
+    --muted: #71717a;
+    --text: #f4f4f5;
+  }
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  
+  /* Desktop background */
+  html {
+    background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+    min-height: 100vh;
+    padding: 0;
+  }
+  
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    margin: 0;
+    position: relative;
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
+  /* Mobile-first: full width on phones */
+  @media (max-width: 768px) {
+    html {
+      background: var(--bg);
+    }
+    body {
+      max-width: 100%;
+      min-height: 100dvh;
+    }
+  }
+  
+  /* Desktop: full screen with centered content */
+  @media (min-width: 769px) {
+    body {
+      max-width: 100%;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      background: linear-gradient(135deg, #09090b 0%, #0f0f10 50%, #09090b 100%);
+      font-size: 18px;
+    }
+    
+    /* Desktop: content wrapper */
+    #appContent, #onboardingScreen {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 60px;
+    }
+    
+    /* Desktop: adjust bottom nav to be proportional */
+    .bottom-nav {
+      background: rgba(24,24,27,0.95);
+      backdrop-filter: blur(30px);
+      border-top: 1px solid rgba(34, 197, 94, 0.2);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px 60px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    
+    .nav-item {
+      padding: 14px 20px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-item:hover {
+      background: rgba(34, 197, 94, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .nav-item.active {
+      background: rgba(34, 197, 94, 0.15);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+    }
+    
+    .nav-icon {
+      width: 28px !important;
+      height: 28px !important;
+      stroke-width: 2.5;
+    }
+    
+    .nav-label {
+      font-size: 14px !important;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+    
+    /* Desktop: larger header */
+    .sticky.top-0 {
+      padding: 24px 60px !important;
+    }
+    
+    .sticky.top-0 .w-8 {
+      width: 48px !important;
+      height: 48px !important;
+    }
+    
+    .sticky.top-0 .font-bold {
+      font-size: 24px !important;
+    }
+    
+    /* Desktop: larger cards and spacing */
+    .main-area {
+      padding-left: 60px !important;
+      padding-right: 60px !important;
+      padding-top: 32px !important;
+      padding-bottom: 120px !important;
+    }
+    
+    /* Desktop: grid layout for cards */
+    #todayList {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 20px;
+    }
+    
+    .food-card {
+      padding: 20px !important;
+    }
+    
+    /* Desktop: larger buttons */
+    .photo-btn {
+      padding: 20px 32px !important;
+      font-size: 18px !important;
+    }
+    
+    button, .badge, input, select {
+      font-size: 16px !important;
+    }
+    
+    /* Desktop: larger cards */
+    .rounded-2xl {
+      padding: 24px !important;
+    }
+    
+    /* Desktop: hover effects */
+    .food-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+    }
+    
+    .photo-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 16px 48px rgba(34, 197, 94, 0.4);
+    }
+    
+    /* Desktop: smooth scrollbar */
+    .main-area::-webkit-scrollbar {
+      width: 12px;
+    }
+    
+    .main-area::-webkit-scrollbar-track {
+      background: var(--surface);
+    }
+    
+    .main-area::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 6px;
+    }
+    
+    .main-area::-webkit-scrollbar-thumb:hover {
+      background: var(--green);
+    }
+    
+    /* Desktop: larger text everywhere */
+    h1 {
+      font-size: 32px !important;
+    }
+    
+    h2 {
+      font-size: 28px !important;
+    }
+    
+    h3 {
+      font-size: 20px !important;
+    }
+    
+    .text-xs {
+      font-size: 14px !important;
+    }
+    
+    .text-sm {
+      font-size: 16px !important;
+    }
+    
+    .text-base {
+      font-size: 18px !important;
+    }
+    
+    .text-lg {
+      font-size: 20px !important;
+    }
+    
+    .text-xl {
+      font-size: 24px !important;
+    }
+    
+    .text-2xl {
+      font-size: 32px !important;
+    }
+    
+    .text-3xl {
+      font-size: 40px !important;
+    }
+  }
+  
+  h1, h2, h3, .font-display { font-family: 'Syne', sans-serif; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 0; }
+
+  /* Tab content */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Nav */
+  .bottom-nav { background: rgba(24,24,27,0.92); backdrop-filter: blur(20px); border-top: 1px solid var(--border); }
+
+  /* Animations */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(34,197,94,0); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up { animation: fadeUp 0.4s ease forwards; }
+  .animate-scale-in { animation: scaleIn 0.35s cubic-bezier(.34,1.56,.64,1) forwards; }
+  .spinner { animation: spin 0.8s linear infinite; }
+  .pulse-btn { animation: pulse-green 2s infinite; }
+  .shimmer-bg {
+    background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+
+  /* Progress bars */
+  .progress-track { background: var(--surface2); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 999px; transition: width 0.8s cubic-bezier(.34,1.56,.64,1); }
+
+  /* Circular progress */
+  .circle-progress { transform: rotate(-90deg); }
+  .circle-bg { fill: none; stroke: var(--surface2); }
+  .circle-fg { fill: none; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(.34,1.56,.64,1); }
+
+  /* Card hover */
+  .food-card { transition: all 0.2s ease; }
+  .food-card:hover { background: var(--surface2); }
+  .food-card:active { transform: scale(0.98); }
+
+  /* Delete btn */
+  .delete-btn { transition: all 0.15s ease; }
+  .delete-btn:hover { color: #ef4444; transform: scale(1.1); }
+  .delete-btn:active { transform: scale(0.9); }
+
+  /* Nav item */
+  .nav-item { transition: all 0.2s ease; cursor: pointer; }
+  .nav-item.active .nav-icon { color: var(--green); }
+  .nav-item.active .nav-label { color: var(--green); }
+  .nav-item .nav-icon { color: var(--muted); transition: color 0.2s; }
+  .nav-item .nav-label { color: var(--muted); transition: color 0.2s; font-size: 10px; }
+
+  /* Photo btn */
+  .photo-btn {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    box-shadow: 0 8px 32px rgba(34,197,94,0.35), 0 0 0 1px rgba(34,197,94,0.2);
+    transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .photo-btn:hover { 
+    transform: translateY(-2px) scale(1.02); 
+    box-shadow: 0 12px 40px rgba(34,197,94,0.5), 0 0 0 1px rgba(34,197,94,0.3); 
+  }
+  .photo-btn:active { transform: scale(0.97); }
+
+  /* Result card */
+  .result-card {
+    background: linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.03) 100%);
+    border: 1px solid rgba(34,197,94,0.2);
+  }
+
+  /* Macro pill */
+  .macro-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    text-align: center;
+    flex: 1;
+  }
+
+  /* Tooltip for macros */
+  .macro-pill div[title] {
+    cursor: help;
+    position: relative;
+  }
+
+  /* Custom tooltip */
+  .tooltip {
+    position: relative;
+  }
+  .tooltip:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    white-space: nowrap;
+    color: var(--text);
+    z-index: 100;
+    margin-bottom: 4px;
+  }
+
+  /* History day card */
+  .history-card { border-left: 3px solid var(--green); transition: all 0.2s; }
+  .history-card:hover { background: var(--surface2); }
+
+  /* Toast notifications */
+  #toastContainer {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    animation: toastIn 0.3s ease forwards;
+    white-space: nowrap;
+  }
+  .toast.success { border-color: rgba(34,197,94,0.4); }
+  .toast.error { border-color: rgba(239,68,68,0.4); }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toastOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-8px); }
+  }
+
+  /* Recommendation card */
+  .rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; transition: all 0.2s; }
+  .rec-card:hover { border-color: rgba(34,197,94,0.3); }
+
+  /* Goal input */
+  .goal-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 6px 10px;
+    width: 80px;
+    text-align: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .goal-input:focus { outline: none; border-color: var(--green); }
+
+  /* Loader overlay */
+  .loader-overlay {
+    position: fixed; inset: 0; background: rgba(9,9,11,0.85);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 100; backdrop-filter: blur(8px);
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  /* Staggered list */
+  .stagger-item { opacity: 0; animation: fadeUp 0.4s ease forwards; }
+  .stagger-item:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-item:nth-child(2) { animation-delay: 0.1s; }
+  .stagger-item:nth-child(3) { animation-delay: 0.15s; }
+  .stagger-item:nth-child(4) { animation-delay: 0.2s; }
+  .stagger-item:nth-child(5) { animation-delay: 0.25s; }
+
+  /* Photo preview */
+  .photo-preview { border: 2px solid rgba(34,197,94,0.3); border-radius: 16px; overflow: hidden; }
+
+  /* Main scroll area */
+  .main-area { 
+    padding-bottom: 90px; 
+    min-height: 100dvh; 
+    background: linear-gradient(to bottom, #0a0a0c, #111113);
+  }
+  
+  /* Header */
+  .sticky.top-0 { 
+    background: rgba(9,9,11,0.96); 
+    backdrop-filter: blur(20px); 
+    border-bottom: 1px solid rgba(39,39,42,0.5); 
+    height: 68px;
+  }
+  
+  /* Hero card styles */
+  .hero-card {
+    margin: 12px 16px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #0f1f10 0%, #0b170c 100%);
+    border: 1px solid rgba(34,197,94, 0.25);
+    box-shadow: 0 4px 20px rgba(34,197,94, 0.1);
+  }
+  
+  .hero-date-label {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #86efac;
+    font-size: 11px;
+  }
+  
+  .hero-calories {
+    font-size: 56px;
+    line-height: 1;
+    color: white;
+    letter-spacing: -2px;
+  }
+  
+  .hero-kcal {
+    font-size: 18px;
+    color: rgba(255,255,255,0.7);
+  }
+  
+  .hero-goal-text {
+    font-size: 14px;
+    color: white;
+  }
+  
+  .hero-remaining {
+    color: #86efac;
+    font-weight: 600;
+  }
+  
+  .calorie-bar {
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(34,197,94, 0.15);
+  }
+  
+  .calorie-fill {
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+  }
+  
+  /* Macro pills */
+  .macro-pill {
+    border-radius: 14px;
+    height: 64px;
+    padding: 12px;
+    text-align: center;
+  }
+  
+  .macro-protein {
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+  }
+  
+  .macro-fat {
+    background: rgba(249,115,22,0.12);
+    border: 1px solid rgba(249,115,22,0.25);
+  }
+  
+  .macro-carb {
+    background: rgba(168,85,247,0.12);
+    border: 1px solid rgba(168,85,247,0.25);
+  }
+  
+  .macro-value {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  
+  .macro-protein .macro-value { color: #3b82f6; }
+  .macro-fat .macro-value { color: #f97316; }
+  .macro-carb .macro-value { color: #a855f7; }
+  
+  .macro-label {
+    font-size: 10px;
+    color: rgba(255,255,255, 0.6);
+  }
+  
+  .mini-bar {
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(255,255,255, 0.1);
+    margin-top: 4px;
+  }
+  
+  .mini-fill {
+    height: 3px;
+    border-radius: 999px;
+  }
+  
+  .protein-mini { background: #3b82f6; }
+  .fat-mini { background: #f97316; }
+  .carb-mini { background: #a855f7; }
+  
+  /* Photo btn */
+  .photo-btn {
+    height: 72px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    box-shadow: 0 10px 25px -5px rgba(34,197,94, 0.4);
+    transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
+  }
+  
+  .photo-btn:hover { 
+    transform: translateY(-2px) scale(1.01); 
+    box-shadow: 0 14px 30px -5px rgba(34,197,94, 0.5); 
+  }
+  .photo-btn:active { transform: scale(0.99); }
+  
+  .photo-btn-main-text {
+    font-size: 17px;
+    font-weight: 700;
+    color: white;
+  }
+  
+  .photo-btn-sub-text {
+    font-size: 12px;
+    color: rgba(255,255,255, 0.85);
+  }
+  
+  /* Gallery btn */
+  .gallery-btn {
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(255,255,255, 0.08);
+    border: 1px solid rgba(255,255,255, 0.12);
+    color: rgba(255,255,255, 0.6);
+    font-size: 13px;
+  }
+  
+  /* Today section */
+  .section-header {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+    color: rgba(255,255,255, 0.4);
+    margin-bottom: 12px;
+  }
+  
+  .food-card {
+    border-radius: 16px;
+    background: rgba(255,255,255, 0.06);
+    border: 1px solid rgba(255,255,255, 0.1);
+  }
+  
+  /* Bottom nav */
+  .bottom-nav {
+    background: #0f0f12;
+    border-top: 1px solid rgba(34,197,94, 0.15);
+    height: 74px;
+  }
+  
+  .nav-label {
+    font-size: 9px;
+  }
+  
+  /* Badge */
+  .badge { 
+    font-size: 11px; 
+    font-weight: 700; 
+    padding: 5px 10px; 
+    border-radius: 999px; 
+    letter-spacing: 0.05em; 
+    text-transform: none;
+    background: rgba(34,197,94, 0.15);
+    color: var(--green);
+  }
+
+  /* Main scroll area */
+  .main-area { padding-bottom: 90px; min-height: 100dvh; }
+  
+  /* Hero card glow effect */
+  @keyframes heroGlow {
+    0%, 100% { box-shadow: 0 4px 20px rgba(34,197,94,0.1), 0 0 40px rgba(34,197,94,0.05); }
+    50% { box-shadow: 0 4px 20px rgba(34,197,94,0.15), 0 0 40px rgba(34,197,94,0.08); }
+  }
+  
+  .hero-glow {
+    animation: heroGlow 3s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
+
+<!-- Loader Overlay -->
+<div id="loaderOverlay" class="loader-overlay hidden">
+  <div class="relative mb-6">
+    <svg class="spinner" width="56" height="56" viewBox="0 0 56 56" fill="none">
+      <circle cx="28" cy="28" r="24" stroke="#27272a" stroke-width="4"/>
+      <path d="M28 4a24 24 0 0 1 24 24" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <div class="absolute inset-0 flex items-center justify-center">
+      <span class="text-lg">🔍</span>
+    </div>
+  </div>
+  <p class="font-display text-zinc-100 font-semibold text-lg">Анализирую блюдо…</p>
+  <p class="text-zinc-500 text-sm mt-1">ИИ распознаёт состав и КБЖУ</p>
+</div>
+
+<!-- Onboarding Screen -->
+<div id="onboardingScreen" class="hidden" style="position: fixed; inset: 0; background: var(--bg); z-index: 100; overflow-y: auto;">
+  <div class="px-6 pt-12 pb-8">
+    <div class="text-center mb-8">
+      <div class="w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-4xl mb-4" style="background: linear-gradient(135deg,#22c55e,#16a34a);">
+        🥗
+      </div>
+      <h1 class="font-display text-2xl font-bold mb-2" style="color: var(--text);">Добро пожаловать!</h1>
+      <p class="text-sm" style="color: var(--muted);">Расскажите о себе для персонализации</p>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Как тебя зовут?</label>
+        <input type="text" id="inputName" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface); border: 1px solid var(--border); color: var(--text);" placeholder="Ваше имя">
+      </div>
+
+      <div>
+        <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Пол</label>
+        <select id="inputGender" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface); border: 1px solid var(--border); color: var(--text);">
+          <option value="">Выберите пол</option>
+          <option value="male">Мужской</option>
+          <option value="female">Женский</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Возраст</label>
+          <input type="number" id="inputAge" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface); border: 1px solid var(--border); color: var(--text);" placeholder="Лет">
+        </div>
+        <div>
+          <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Вес (кг)</label>
+          <input type="number" id="inputWeight" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface); border: 1px solid var(--border); color: var(--text);" placeholder="кг">
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Рост (см)</label>
+        <input type="number" id="inputHeight" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface); border: 1px solid var(--border); color: var(--text);" placeholder="см">
+      </div>
+
+      <div>
+        <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Уровень активности</label>
+        <select id="inputActivity" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface); border: 1px solid var(--border); color: var(--text);" onchange="calculateCalories()">
+          <option value="">Выберите активность</option>
+          <option value="1.2">Сидячий (офис, почти без спорта)</option>
+          <option value="1.375">Лёгкая (1-3 тренировки в нед.)</option>
+          <option value="1.55">Умеренная (3-5 тренировок в нед.)</option>
+          <option value="1.725">Высокая (6-7 тренировок в нед.)</option>
+          <option value="1.9">Очень высокая (2 раза в день)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Какова ваша цель?</label>
+        <select id="inputGoalType" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface); border: 1px solid var(--border); color: var(--text);" onchange="calculateCalories()">
+          <option value="">Выберите цель</option>
+          <option value="lose">Похудеть</option>
+          <option value="maintain">Поддержать вес</option>
+          <option value="gain">Набрать массу</option>
+        </select>
+      </div>
+
+      <div id="calculatedGoalBlock" class="hidden">
+        <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Рассчитанная норма калорий</label>
+        <div class="p-4 rounded-xl text-center" style="background: var(--surface2); border: 1px solid var(--border);">
+          <div class="text-3xl font-bold" style="color: var(--green);" id="calculatedCalories">2000</div>
+          <div class="text-sm" style="color: var(--muted);">ккал/день</div>
+        </div>
+        <p class="text-xs mt-2" style="color: var(--muted);" id="goalDescription"></p>
+      </div>
+    </div>
+
+    <button onclick="completeOnboarding()" class="w-full mt-8 py-4 rounded-2xl font-semibold text-base" style="background: linear-gradient(135deg,#22c55e,#16a34a); color: white;">Начать</button>
+  </div>
+</div>
+
+<!-- App Shell -->
+<div id="appContent">
+<div class="main-area overflow-y-auto" id="mainArea">
+
+  <!-- Header -->
+  <div class="sticky top-0 z-40" style="height: 68px; background: rgba(9,9,11,0.96); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(39,39,42,0.5);">
+    <div class="px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-xl" style="background: linear-gradient(135deg,#22c55e,#16a34a);">
+          🥗
+        </div>
+        <span class="font-display font-bold text-lg tracking-tight">
+          <span style="color: white;">Snap</span><span style="color: #22c55e;">Fit</span><span style="color: white;">Scan</span>
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="badge flex items-center gap-1" style="background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); padding: 4px 10px;">
+          🔥 <span id="streakDays">0</span> дня
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: СЕГОДНЯ ============ -->
+  <div id="tab-today" class="tab-content active px-4 pt-4">
+    <!-- Daily Goal & Totals -->
+    <div class="hero-card p-5 mb-4 animate-fade-up relative overflow-hidden">
+      <!-- Date label -->
+      <div class="hero-date-label mb-2" style="color: #86efac; font-weight: 600; letter-spacing: 0.5px;">
+        <span id="heroDateLabel">вторник, 25 марта</span>
+      </div>
+      
+      <!-- Progress ring in top right -->
+      <div class="absolute top-5 right-5">
+        <svg class="circle-progress" width="52" height="52" viewBox="0 0 52 52" style="transform: rotate(-90deg);">
+          <circle class="circle-bg" cx="26" cy="26" r="23" stroke-width="5" stroke="rgba(255,255,255,0.12)" fill="none"/>
+          <circle id="heroProgressCircle" class="circle-fg" cx="26" cy="26" r="23" stroke-width="5" stroke="#22c55e" fill="none"
+            stroke-dasharray="144.5" stroke-dashoffset="144.5" stroke-linecap="round"/>
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span id="heroProgressPct" class="font-display font-bold text-xs" style="color: white; font-weight: 700;">0%</span>
+        </div>
+      </div>
+      
+      <div class="flex items-end gap-2 mb-1 pr-16">
+        <span id="totalCalDisplay" class="hero-calories font-display font-black" style="font-size: 56px; color: white; letter-spacing: -2px;">0</span>
+        <span class="hero-kcal text-lg pb-1" style="color: rgba(255,255,255,0.7);">ккал</span>
+      </div>
+      
+      <div class="text-sm mb-3 hero-goal-text" style="color: white;">
+        из <span style="color: #22c55e; font-weight: 700;" id="goalDisplay">2000</span> — осталось <span id="remainingCal" class="hero-remaining" style="color: #86efac; font-weight: 700;">2000</span>
+      </div>
+      
+      <!-- Calorie bar -->
+      <div class="calorie-bar mb-4">
+        <div id="calBar" class="calorie-fill" style="width: 0%;"></div>
+      </div>
+      
+      <!-- Macros row -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="macro-pill macro-protein flex flex-col items-center justify-center">
+          <div id="totalProtein" class="macro-value font-display font-bold" style="color: #3b82f6;">0 г</div>
+          <div class="macro-label mb-1" style="color: rgba(255,255,255, 0.6);">Белки</div>
+          <div class="mini-bar">
+            <div id="proteinBar" class="mini-fill protein-mini" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="macro-pill macro-fat flex flex-col items-center justify-center">
+          <div id="totalFat" class="macro-value font-display font-bold" style="color: #f97316;">0 г</div>
+          <div class="macro-label mb-1" style="color: rgba(255,255,255, 0.6);">Жиры</div>
+          <div class="mini-bar">
+            <div id="fatBar" class="mini-fill fat-mini" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="macro-pill macro-carb flex flex-col items-center justify-center">
+          <div id="totalCarbs" class="macro-value font-display font-bold" style="color: #a855f7;">0 г</div>
+          <div class="macro-label mb-1" style="color: rgba(255,255,255, 0.6);">Углев.</div>
+          <div class="mini-bar">
+            <div id="carbsBar" class="mini-fill carb-mini" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Photo section -->
+    <div id="photoSection" class="rounded-2xl p-4 mb-4 animate-fade-up" style="animation-delay:0.1s; background: var(--surface); border: 1px solid var(--border);">
+      <div id="photoInitial">
+        <p class="font-display font-semibold text-sm mb-3" style="color: var(--muted);">Добавить приём пищи</p>
+        <label for="photoInput" class="photo-btn flex flex-col items-center justify-center gap-1 rounded-2xl py-4 px-6 cursor-pointer w-full relative">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-md flex items-center justify-center" style="background: rgba(255,255,255,0.2);">
+              📸
+            </div>
+            <div class="text-left">
+              <div class="font-display font-bold photo-btn-main-text">Сфотографировать еду</div>
+              <div class="photo-btn-sub-text">ИИ распознает КБЖУ за секунды</div>
+            </div>
+          </div>
+        </label>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+        <div class="mt-3 flex items-center gap-2">
+          <div class="h-px flex-1" style="background: var(--border);"></div>
+          <span class="text-xs" style="color: var(--muted);">или из галереи</span>
+          <div class="h-px flex-1" style="background: var(--border);"></div>
+        </div>
+        <label for="photoInput2" class="mt-3 gallery-btn flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 cursor-pointer w-full">
+          <span class="text-xl">🖼️</span>
+          <span class="text-sm">Выбрать из галереи</span>
+        </label>
+        <input type="file" id="photoInput2" accept="image/*" class="hidden">
+        <button onclick="openManualAdd()" class="mt-3 gallery-btn flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 cursor-pointer w-full" style="background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3);">
+          <span class="text-xl">✏️</span>
+          <span class="text-sm" style="color: var(--green);">Добавить вручную</span>
+        </button>
+      </div>
+
+      <!-- Preview state -->
+      <div id="photoPreview" class="hidden">
+        <div class="photo-preview mb-3 relative">
+          <img id="previewImg" src="" alt="preview" class="w-full h-48 object-cover">
+          <div class="absolute top-2 right-2">
+            <button onclick="resetPhoto('today')" class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(9,9,11,0.8);">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="#71717a" stroke-width="2" stroke-linecap="round" d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+        <button onclick="analyzePhoto('today')" class="photo-btn flex items-center justify-center gap-2 rounded-2xl py-3.5 px-6 w-full">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path stroke="white" stroke-width="2" stroke-linecap="round" d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+          <span class="font-display font-bold text-base text-white">Распознать блюдо</span>
+        </button>
+      </div>
+
+      <!-- Result state -->
+      <div id="analysisResult" class="hidden animate-scale-in">
+        <div class="result-card rounded-2xl p-4 mb-3">
+          <div class="flex items-start gap-3 mb-3">
+            <div class="photo-preview rounded-xl overflow-hidden w-16 h-16 flex-shrink-0">
+              <img id="resultImg" src="" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5 mb-1">
+                <div class="badge" style="background: rgba(34,197,94,0.15); color: var(--green);">ИИ</div>
+                <span class="text-xs" style="color: var(--muted);">Распознано</span>
+              </div>
+              <input id="dishName" type="text" class="font-display font-bold text-base w-full bg-transparent border-0 outline-none" style="color: var(--text);" value="">
+              <p class="text-xs mt-0.5" style="color: var(--muted);">Нажмите для редактирования</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-4 gap-2">
+            <div class="text-center">
+              <div class="font-display font-bold text-xl" style="color: var(--green);" id="rCal">—</div>
+              <div class="text-xs" style="color: var(--muted);">ккал</div>
+            </div>
+            <div class="text-center">
+              <div class="font-display font-bold text-xl" style="color: #60a5fa;" id="rProt">—</div>
+              <div class="text-xs" style="color: var(--muted);">белки</div>
+            </div>
+            <div class="text-center">
+              <div class="font-display font-bold text-xl" style="color: #fb923c;" id="rFat">—</div>
+              <div class="text-xs" style="color: var(--muted);">жиры</div>
+            </div>
+            <div class="text-center">
+              <div class="font-display font-bold text-xl" style="color: #a78bfa;" id="rCarbs">—</div>
+              <div class="text-xs" style="color: var(--muted);">углев.</div>
+            </div>
+          </div>
+        </div>
+        <!-- Food rating and recommendations -->
+        <div id="foodRating" class="rounded-xl p-3 mb-3" style="background: var(--surface2); border: 1px solid var(--border);">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium" style="color: var(--muted);">Оценка блюда</span>
+            <span id="ratingStars" class="text-sm">★★★★☆</span>
+          </div>
+          <p id="foodRecommendation" class="text-xs" style="color: var(--muted);">—</p>
+        </div>
+
+        <!-- Portion editing (shown after "Изменить" click) -->
+        <div id="portionEditor" class="hidden animate-fade-up mb-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium" style="color: var(--muted);">Редактирование порции</span>
+          </div>
+          <div class="mb-3">
+            <label class="text-xs" style="color: var(--muted);">Вес порции (г)</label>
+            <input type="number" id="editPortionWeight" class="w-full rounded-lg px-3 py-2 text-sm" style="background: var(--bg); border: 1px solid var(--border); color: var(--text);" value="100" oninput="recalcPortionFromWeight()">
+          </div>
+          <div class="rounded-xl p-3 mb-3" style="background: var(--surface2);">
+            <div class="text-xs text-center mb-2" style="color: var(--muted);">Итого за <span id="portionWeightDisplay">100</span>г:</div>
+            <div class="grid grid-cols-4 gap-2 text-center">
+              <div>
+                <div id="portionCal" class="font-bold text-lg" style="color: var(--green);">0</div>
+                <div class="text-xs" style="color: var(--muted);">ккал</div>
+              </div>
+              <div>
+                <div id="portionProt" class="font-bold text-lg" style="color: #60a5fa;">0</div>
+                <div class="text-xs" style="color: var(--muted);">Белки</div>
+              </div>
+              <div>
+                <div id="portionFat" class="font-bold text-lg" style="color: #fb923c;">0</div>
+                <div class="text-xs" style="color: var(--muted);">Жиры</div>
+              </div>
+              <div>
+                <div id="portionCarbs" class="font-bold text-lg" style="color: #a78bfa;">0</div>
+                <div class="text-xs" style="color: var(--muted);">Углев</div>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs" style="color: var(--muted);">Белки (на 100г)</label>
+              <input type="number" id="editProt" class="w-full rounded-lg px-3 py-2 text-sm" style="background: var(--bg); border: 1px solid var(--border); color: var(--text);" oninput="recalcPortionFromWeight()">
+            </div>
+            <div>
+              <label class="text-xs" style="color: var(--muted);">Жиры (на 100г)</label>
+              <input type="number" id="editFat" class="w-full rounded-lg px-3 py-2 text-sm" style="background: var(--bg); border: 1px solid var(--border); color: var(--text);" oninput="recalcPortionFromWeight()">
+            </div>
+            <div>
+              <label class="text-xs" style="color: var(--muted);">Углеводы (на 100г)</label>
+              <input type="number" id="editCarbs" class="w-full rounded-lg px-3 py-2 text-sm" style="background: var(--bg); border: 1px solid var(--border); color: var(--text);" oninput="recalcPortionFromWeight()">
+            </div>
+            <div>
+              <label class="text-xs" style="color: var(--muted);">Ккал (на 100г)</label>
+              <input type="number" id="editCal" class="w-full rounded-lg px-3 py-2 text-sm" style="background: var(--bg); border: 1px solid var(--border); color: var(--text);" oninput="recalcPortionFromWeight()">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="addToToday()" id="addBtn" class="photo-btn rounded-xl py-3 font-display font-bold text-sm text-white text-center">
+            + Добавить
+          </button>
+          <button onclick="togglePortionEditor()" id="editBtn" class="rounded-xl py-3 font-display font-bold text-sm text-center" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+            Изменить
+          </button>
+          <button onclick="resetPhoto('today')" class="rounded-xl py-3 font-display font-bold text-sm text-center" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+            Новое фото
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's food list -->
+    <div class="mb-4">
+      <div class="section-header">СЕГОДНЯ</div>
+      <div id="todayList">
+        <!-- Items rendered by JS -->
+      </div>
+      <div id="emptyState" class="flex flex-col items-center py-10">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-3" style="background: var(--surface2);">
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path stroke="#52525b" stroke-width="1.5" stroke-linecap="round" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/><path stroke="#52525b" stroke-width="1.5" stroke-linecap="round" d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+        </div>
+        <p class="font-semibold text-sm" style="color: var(--muted);">Пока ничего не добавлено</p>
+        <p class="text-xs mt-1" style="color: #52525b;">Сфотографируйте еду выше</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: АНАЛИЗ ФОТО ============ -->
+  <!-- ============ TAB: РЕКОМЕНДАЦИИ ============ -->
+  <div id="tab-recs" class="tab-content px-4 pt-4">
+    <div class="mb-4 animate-fade-up">
+      <h2 class="font-display font-bold text-xl mb-1">Рекомендации</h2>
+      <p id="recSubtitle" class="text-sm" style="color: var(--muted);">На основе вашего рациона сегодня</p>
+    </div>
+
+    <!-- Macro circles -->
+    <div class="rounded-2xl p-4 mb-4 animate-fade-up" style="animation-delay:0.05s; background: var(--surface); border: 1px solid var(--border);">
+      <h3 class="font-display font-semibold text-sm mb-4">БЖУ — прогресс</h3>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="flex flex-col items-center">
+          <div class="relative w-20 h-20 mb-2">
+            <svg class="circle-progress w-20 h-20" viewBox="0 0 80 80">
+              <circle class="circle-bg" cx="40" cy="40" r="32" stroke-width="6"/>
+              <circle class="circle-fg" id="protCircle" cx="40" cy="40" r="32" stroke="#60a5fa" stroke-width="6"
+                stroke-dasharray="201" stroke-dashoffset="201"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span id="protPct" class="font-display font-bold text-base" style="color: #60a5fa;">0%</span>
+            </div>
+          </div>
+          <span class="font-display font-semibold text-xs" style="color: #60a5fa;">Белки</span>
+          <span id="protGrams" class="text-xs" style="color: var(--muted);">0 / 100 г</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="relative w-20 h-20 mb-2">
+            <svg class="circle-progress w-20 h-20" viewBox="0 0 80 80">
+              <circle class="circle-bg" cx="40" cy="40" r="32" stroke-width="6"/>
+              <circle class="circle-fg" id="fatCircle" cx="40" cy="40" r="32" stroke="#fb923c" stroke-width="6"
+                stroke-dasharray="201" stroke-dashoffset="201"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span id="fatPct" class="font-display font-bold text-base" style="color: #fb923c;">0%</span>
+            </div>
+          </div>
+          <span class="font-display font-semibold text-xs" style="color: #fb923c;">Жиры</span>
+          <span id="fatGrams" class="text-xs" style="color: var(--muted);">0 / 67 г</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="relative w-20 h-20 mb-2">
+            <svg class="circle-progress w-20 h-20" viewBox="0 0 80 80">
+              <circle class="circle-bg" cx="40" cy="40" r="32" stroke-width="6"/>
+              <circle class="circle-fg" id="carbCircle" cx="40" cy="40" r="32" stroke="#a78bfa" stroke-width="6"
+                stroke-dasharray="201" stroke-dashoffset="201"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span id="carbPct" class="font-display font-bold text-base" style="color: #a78bfa;">0%</span>
+            </div>
+          </div>
+          <span class="font-display font-semibold text-xs" style="color: #a78bfa;">Углеводы</span>
+          <span id="carbGrams" class="text-xs" style="color: var(--muted);">0 / 250 г</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status card -->
+    <div id="statusCard" class="rounded-2xl p-4 mb-4 animate-fade-up" style="animation-delay:0.1s; background: var(--surface); border: 1px solid var(--border);">
+      <div class="flex items-center gap-3">
+        <div id="statusIcon" class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background: rgba(34,197,94,0.15);">✅</div>
+        <div>
+          <p id="statusTitle" class="font-display font-semibold text-sm">Всё хорошо!</p>
+          <p id="statusDesc" class="text-xs mt-0.5" style="color: var(--muted);">Добавьте первый приём пищи</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations list -->
+    <div id="recsList" class="space-y-3 animate-fade-up" style="animation-delay:0.15s;">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- ============ TAB: ИСТОРИЯ ============ -->
+  <div id="tab-history" class="tab-content px-4 pt-4">
+    <div class="flex items-center justify-between mb-4 animate-fade-up">
+      <div>
+        <h2 class="font-display font-bold text-xl">История</h2>
+        <p class="text-sm" style="color: var(--muted);">Ваш рацион по дням</p>
+      </div>
+      <div class="badge" style="background: rgba(34,197,94,0.15); color: var(--green);" id="streakBadge">🔥 0 дней</div>
+    </div>
+    <!-- Weekly summary -->
+    <div class="rounded-2xl p-4 mb-4 animate-fade-up" style="animation-delay:0.05s; background: var(--surface); border: 1px solid var(--border);">
+      <h3 class="font-display font-semibold text-sm mb-3">Неделя — ккал/день</h3>
+      <div id="weekBars" class="flex items-end gap-1.5 h-20"></div>
+      <div id="weekLabels" class="flex gap-1.5 mt-1.5"></div>
+    </div>
+    <div id="historyList" class="space-y-3">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- ============ TAB: СТАТИСТИКА ============ -->
+  <div id="tab-stats" class="tab-content px-4 pt-4">
+    <div class="mb-4 animate-fade-up">
+      <h2 class="font-display font-bold text-xl">Статистика</h2>
+      <p class="text-sm" style="color: var(--muted);">Ваши достижения за неделю</p>
+    </div>
+
+    <!-- Achievements -->
+    <div class="rounded-2xl p-4 mb-4 animate-fade-up" style="animation-delay:0.05s; background: var(--surface); border: 1px solid var(--border);">
+      <h3 class="font-display font-semibold text-sm mb-3">🏆 Достижения</h3>
+      <div class="grid grid-cols-2 gap-3" id="achievementsList">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Weekly Stats -->
+    <div class="rounded-2xl p-4 mb-4 animate-fade-up" style="animation-delay:0.1s; background: var(--surface); border: 1px solid var(--border);">
+      <h3 class="font-display font-semibold text-sm mb-3">📊 Неделя</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="text-center p-3 rounded-xl" style="background: var(--surface2);">
+          <div class="text-2xl font-bold" style="color: var(--green);" id="weekAvgCal">0</div>
+          <div class="text-xs" style="color: var(--muted);">ккал/день</div>
+        </div>
+        <div class="text-center p-3 rounded-xl" style="background: var(--surface2);">
+          <div class="text-2xl font-bold" style="color: #3b82f6;" id="weekAvgProt">0г</div>
+          <div class="text-xs" style="color: var(--muted);">белок/день</div>
+        </div>
+        <div class="text-center p-3 rounded-xl" style="background: var(--surface2);">
+          <div class="text-2xl font-bold" style="color: #f59e0b;" id="weekAvgFat">0г</div>
+          <div class="text-xs" style="color: var(--muted);">жиры/день</div>
+        </div>
+        <div class="text-center p-3 rounded-xl" style="background: var(--surface2);">
+          <div class="text-2xl font-bold" style="color: #8b5cf6;" id="weekAvgCarbs">0г</div>
+          <div class="text-xs" style="color: var(--muted);">углеводы</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Streak -->
+    <div class="rounded-2xl p-4 mb-4 animate-fade-up" style="animation-delay:0.15s; background: var(--surface); border: 1px solid var(--border);">
+      <h3 class="font-display font-semibold text-sm mb-3">🔥 Серия</h3>
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-3xl font-bold" style="color: var(--green);" id="statStreak">0</div>
+          <div class="text-sm" style="color: var(--muted);">дней подряд</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold" style="color: #3b82f6;" id="statPerfectDays">0</div>
+          <div class="text-sm" style="color: var(--muted);">идеальных дней</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold" style="color: #f59e0b;" id="statTotalDays">0</div>
+          <div class="text-sm" style="color: var(--muted);">всего дней</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: ПРОФИЛЬ ============ -->
+  <div id="tab-profile" class="tab-content px-4 pt-4">
+    <div class="mb-4 animate-fade-up">
+      <h2 class="font-display font-bold text-xl">Профиль</h2>
+      <p class="text-sm" style="color: var(--muted);">Ваши данные</p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="rounded-2xl p-4 mb-4 animate-fade-up" style="animation-delay:0.05s; background: var(--surface); border: 1px solid var(--border);">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl" style="background: linear-gradient(135deg,#22c55e,#16a34a);">
+          👤
+        </div>
+        <div>
+          <div class="font-display font-bold text-lg" id="profileName">Пользователь</div>
+          <div class="text-sm" style="color: var(--muted);" id="profileStats">Настройте профиль</div>
+          <div class="text-xs mt-1" id="profileMacroStats" style="color: var(--muted);">БЖУ не заданы</div>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Имя</label>
+          <input type="text" id="editName" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Вес (кг)</label>
+            <input type="number" id="editWeight" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+          </div>
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Рост (см)</label>
+            <input type="number" id="editHeight" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Возраст</label>
+            <input type="number" id="editAge" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+          </div>
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Пол</label>
+            <select id="editGender" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+              <option value="">Не указан</option>
+              <option value="male">Мужской</option>
+              <option value="female">Женский</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Дневная цель калорий</label>
+          <input type="number" id="editGoal" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+        </div>
+
+        <div>
+          <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Уровень активности</label>
+          <select id="editActivity" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+            <option value="1.2">Сидячий (офис, почти без спорта)</option>
+            <option value="1.375">Лёгкая (1-3 тренировки в нед.)</option>
+            <option value="1.55">Умеренная (3-5 тренировок в нед.)</option>
+            <option value="1.725">Высокая (6-7 тренировок в нед.)</option>
+            <option value="1.9">Очень высокая (2 раза в день)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: #60a5fa;">Белки (г)</label>
+            <input type="number" id="editProtGoal" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+          </div>
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: #fb923c;">Жиры (г)</label>
+            <input type="number" id="editFatGoal" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+          </div>
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: #a78bfa;">Углеводы (г)</label>
+            <input type="number" id="editCarbsGoal" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+          </div>
+        </div>
+
+        <button onclick="saveProfileEdit()" class="w-full py-3 rounded-xl font-semibold text-sm mt-2" style="background: linear-gradient(135deg,#22c55e,#16a34a); color: white;">Сохранить</button>
+      </div>
+    </div>
+
+    <!-- Reset -->
+    <button onclick="resetProfile()" class="w-full py-3 rounded-xl text-sm" style="color: var(--muted); border: 1px solid var(--border);">Сбросить данные</button>
+  </div>
+
+</div><!-- end main-area -->
+
+<!-- Manual Add Modal -->
+<div id="manualAddModal" class="fixed inset-0 z-50 hidden" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);" onclick="closeManualAdd(event)">
+  <div class="h-full flex items-end sm:items-center justify-center" onclick="event.stopPropagation()">
+    <div class="w-full max-w-md rounded-t-2xl p-5 animate-scale-in" style="background: var(--surface); border-top-left-radius: 24px; border-top-right-radius: 24px;">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-xl" style="color: var(--text);">Добавить блюдо вручную</h3>
+        <button onclick="closeManualAdd()" class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(255,255,255,0.1);">
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Название блюда</label>
+          <input type="text" id="manualDishName" class="w-full rounded-xl px-4 py-3 text-base" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);" placeholder="Например: Куриная грудка с рисом" oninput="predictKBJU(this.value)">
+          <div id="aiPredicting" class="hidden mt-2 flex items-center gap-2 rounded-lg px-3 py-2" style="background: rgba(34,197,94,0.1);">
+            <span class="spinner inline-block" style="animation: spin 1s linear infinite;">↻</span>
+            <span class="text-xs" style="color: var(--green);">ИИ определяет КБЖУ...</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Тип приёма пищи</label>
+            <select id="manualMealType" class="w-full rounded-xl px-4 py-3 text-base" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+              <option value="breakfast">🌅 Завтрак</option>
+              <option value="lunch">☀️ Обед</option>
+              <option value="dinner">🌙 Ужин</option>
+              <option value="snack">🍎 Перекус</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Время</label>
+            <input type="time" id="manualTime" class="w-full rounded-xl px-4 py-3 text-base" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Порция (грамм)</label>
+          <input type="number" id="manualWeight" class="w-full rounded-xl px-4 py-3 text-base" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);" value="100" placeholder="г">
+        </div>
+
+        <div>
+          <label class="text-xs font-medium mb-2 block" style="color: var(--muted);">КБЖУ (на 100г)</label>
+          <div class="grid grid-cols-4 gap-2">
+            <div class="rounded-xl px-2 py-2 text-center" style="background: var(--surface2); border: 1px solid var(--border);">
+              <span class="text-xs block mb-1" style="color: var(--muted);">Ккал</span>
+              <input type="number" id="manualCal" class="w-full text-center text-lg font-bold bg-transparent border-0" style="color: var(--green);" value="0" placeholder="0">
+            </div>
+            <div class="rounded-xl px-2 py-2 text-center" style="background: var(--surface2); border: 1px solid var(--border);">
+              <span class="text-xs block mb-1" style="color: var(--muted);">Белки</span>
+              <input type="number" id="manualProt" class="w-full text-center text-lg font-bold bg-transparent border-0" style="color: #60a5fa;" value="0" placeholder="0">
+            </div>
+            <div class="rounded-xl px-2 py-2 text-center" style="background: var(--surface2); border: 1px solid var(--border);">
+              <span class="text-xs block mb-1" style="color: var(--muted);">Жиры</span>
+              <input type="number" id="manualFat" class="w-full text-center text-lg font-bold bg-transparent border-0" style="color: #fb923c;" value="0" placeholder="0">
+            </div>
+            <div class="rounded-xl px-2 py-2 text-center" style="background: var(--surface2); border: 1px solid var(--border);">
+              <span class="text-xs block mb-1" style="color: var(--muted);">Углев.</span>
+              <input type="number" id="manualCarbs" class="w-full text-center text-lg font-bold bg-transparent border-0" style="color: #a78bfa;" value="0" placeholder="0">
+            </div>
+          </div>
+        </div>
+
+        <button onclick="addManualFood()" class="w-full py-4 rounded-2xl font-semibold text-base mt-2" style="background: linear-gradient(135deg,#22c55e,#16a34a); color: white;">Добавить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Meal Type Modal -->
+<div id="editMealTypeModal" class="fixed inset-0 z-50 hidden" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);" onclick="closeEditMealType(event)">
+  <div class="h-full flex items-end sm:items-center justify-center" onclick="event.stopPropagation()">
+    <div class="w-full max-w-md rounded-t-2xl p-5 animate-scale-in" style="background: var(--surface); border-top-left-radius: 24px; border-top-right-radius: 24px;">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-xl" style="color: var(--text);">Изменить приём пищи</h3>
+        <button onclick="closeEditMealType()" class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(255,255,255,0.1);">
+          ✕
+        </button>
+      </div>
+
+      <input type="hidden" id="editMealItemId">
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Тип приёма пищи</label>
+            <select id="editMealType" class="w-full rounded-xl px-4 py-3 text-base" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+              <option value="breakfast">🌅 Завтрак</option>
+              <option value="lunch">☀️ Обед</option>
+              <option value="dinner">🌙 Ужин</option>
+              <option value="snack">🍎 Перекус</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Время</label>
+            <input type="time" id="editMealTime" class="w-full rounded-xl px-4 py-3 text-base" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="saveEditMealType()" class="flex-1 py-3 rounded-xl font-semibold" style="background: linear-gradient(135deg,#22c55e,#16a34a); color: white;">Сохранить</button>
+          <button onclick="closeEditMealType()" class="px-4 py-3 rounded-xl font-semibold" style="background: var(--surface2); color: var(--text);">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer"></div>
+
+<!-- Edit Food Item Modal -->
+<div id="editFoodModal" class="fixed inset-0 z-50 hidden" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);" onclick="closeEditFood(event)">
+  <div class="h-full flex items-end sm:items-center justify-center" onclick="event.stopPropagation()">
+    <div class="w-full max-w-md rounded-t-2xl p-5 animate-scale-in" style="background: var(--surface); border-top-left-radius: 24px; border-top-right-radius: 24px;">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-xl" style="color: var(--text);">Редактировать запись</h3>
+        <button onclick="closeEditFood()" class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(255,255,255,0.1);">✕</button>
+      </div>
+      <input type="hidden" id="editFoodItemId">
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Название блюда</label>
+          <input type="text" id="editFoodName" class="w-full rounded-xl px-4 py-3 text-base" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Тип приёма пищи</label>
+            <select id="editFoodMealType" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+              <option value="breakfast">🌅 Завтрак</option>
+              <option value="lunch">☀️ Обед</option>
+              <option value="dinner">🌙 Ужин</option>
+              <option value="snack">🍎 Перекус</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Время</label>
+            <input type="time" id="editFoodTime" class="w-full rounded-xl px-4 py-3 text-sm" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);">
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-medium mb-1.5 block" style="color: var(--muted);">Порция (г) — пересчитает КБЖУ автоматически</label>
+          <input type="number" id="editFoodWeight" class="w-full rounded-xl px-4 py-3 text-base" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text);" oninput="recalcEditFood()">
+        </div>
+        <div>
+          <label class="text-xs font-medium mb-2 block" style="color: var(--muted);">КБЖУ (итоговые значения)</label>
+          <div class="grid grid-cols-4 gap-2">
+            <div class="rounded-xl px-2 py-2 text-center" style="background: var(--surface2); border: 1px solid var(--border);">
+              <span class="text-xs block mb-1" style="color: var(--muted);">Ккал</span>
+              <input type="number" id="editFoodCal" class="w-full text-center text-lg font-bold bg-transparent border-0 outline-none" style="color: var(--green);">
+            </div>
+            <div class="rounded-xl px-2 py-2 text-center" style="background: var(--surface2); border: 1px solid var(--border);">
+              <span class="text-xs block mb-1" style="color: var(--muted);">Белки</span>
+              <input type="number" id="editFoodProt" class="w-full text-center text-lg font-bold bg-transparent border-0 outline-none" style="color: #60a5fa;">
+            </div>
+            <div class="rounded-xl px-2 py-2 text-center" style="background: var(--surface2); border: 1px solid var(--border);">
+              <span class="text-xs block mb-1" style="color: var(--muted);">Жиры</span>
+              <input type="number" id="editFoodFat" class="w-full text-center text-lg font-bold bg-transparent border-0 outline-none" style="color: #fb923c;">
+            </div>
+            <div class="rounded-xl px-2 py-2 text-center" style="background: var(--surface2); border: 1px solid var(--border);">
+              <span class="text-xs block mb-1" style="color: var(--muted);">Углев.</span>
+              <input type="number" id="editFoodCarbs" class="w-full text-center text-lg font-bold bg-transparent border-0 outline-none" style="color: #a78bfa;">
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="saveEditFood()" class="flex-1 py-3 rounded-xl font-semibold" style="background: linear-gradient(135deg,#22c55e,#16a34a); color: white;">Сохранить</button>
+          <button onclick="closeEditFood()" class="px-4 py-3 rounded-xl font-semibold" style="background: var(--surface2); color: var(--text);">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50">
+  <div class="grid grid-cols-4 py-3 px-1">
+    <button class="nav-item active flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl" onclick="switchTab('today', this)">
+      <div class="w-6 h-6 flex items-center justify-center">
+        🏠
+      </div>
+      <span class="nav-label" style="color: var(--green);">Сегодня</span>
+    </button>
+    <button class="nav-item flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl" onclick="switchTab('recs', this)">
+      <div class="w-6 h-6 flex items-center justify-center">
+        💡
+      </div>
+      <span class="nav-label" style="color: var(--muted);">Советы</span>
+    </button>
+    <button class="nav-item flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl" onclick="switchTab('history', this)">
+      <div class="w-6 h-6 flex items-center justify-center">
+        📊
+      </div>
+      <span class="nav-label" style="color: var(--muted);">История</span>
+    </button>
+    <button class="nav-item flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl" onclick="switchTab('profile', this)">
+      <div class="w-6 h-6 flex items-center justify-center">
+        👤
+      </div>
+      <span class="nav-label" style="color: var(--muted);">Профиль</span>
+    </button>
+  </div>
+</nav>
+
+<script>
+// ============ DATA & STORAGE ============
+const STORAGE_KEY = 'snapfitscan_v3';
+const HISTORY_KEY = 'snapfitscan_history_v3';
+const PROFILE_KEY = 'snapfitscan_profile';
+const ACHIEVEMENTS_KEY = 'snapfitscan_achievements';
+const TODAY_KEY = () => new Date().toISOString().split('T')[0];
+
+const defaultProfile = {
+  name: '',
+  gender: '',
+  age: '',
+  weight: '',
+  height: '',
+  goal: 2000,
+  onboardingComplete: false
+};
+
+const defaultAchievements = {
+  firstMeal: false,
+  weekStreak: 0,
+  goalReached: 0,
+  totalDays: 0,
+  perfectDays: 0
+};
+
+let profile = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null');
+let achievements = JSON.parse(localStorage.getItem(ACHIEVEMENTS_KEY) || 'null');
+
+if (!profile) profile = { ...defaultProfile };
+if (!achievements) achievements = { ...defaultAchievements };
+
+let appData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"goal":2000,"today":[]}');
+let historyData = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+let currentPhotoDataURL = null;
+let currentResult = null;
+let currentPhotoDataURL2 = null;
+let currentResult2 = null;
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+}
+
+function saveProfile() {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(achievements));
+}
+
+function checkOnboarding() {
+  // Check if profile exists and has onboardingComplete = true
+  const savedProfile = localStorage.getItem(PROFILE_KEY);
+  if (savedProfile) {
+    const p = JSON.parse(savedProfile);
+    if (p && p.onboardingComplete === true) {
+      document.getElementById('onboardingScreen').classList.add('hidden');
+      document.getElementById('appContent').classList.remove('hidden');
+      return;
+    }
+  }
+
+  // Show onboarding
+  document.getElementById('onboardingScreen').classList.remove('hidden');
+  document.getElementById('appContent').classList.add('hidden');
+}
+
+function calculateCalories() {
+  const weight = parseFloat(document.getElementById('inputWeight').value);
+  const height = parseFloat(document.getElementById('inputHeight').value);
+  const age = parseInt(document.getElementById('inputAge').value);
+  const gender = document.getElementById('inputGender').value;
+  const goalType = document.getElementById('inputGoalType').value;
+
+  const block = document.getElementById('calculatedGoalBlock');
+  const display = document.getElementById('calculatedCalories');
+  const desc = document.getElementById('goalDescription');
+
+  if (!weight || !height || !age || !gender || !goalType) {
+    block.classList.add('hidden');
+    return;
+  }
+
+  block.classList.remove('hidden');
+
+  // Mifflin-St Jeor Formula
+  let bmr;
+  if (gender === 'male') {
+    bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+  } else {
+    bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+  }
+
+  // Activity multiplier from user selection
+  const activityEl = document.getElementById('inputActivity');
+  const activityMult = activityEl && activityEl.value ? parseFloat(activityEl.value) : 1.55;
+  const tdee = Math.round(bmr * activityMult);
+
+  let goal, description;
+  switch(goalType) {
+    case 'lose':
+      goal = tdee - 500;
+      description = 'Дефицит 500 ккал для безопасного похудения';
+      break;
+    case 'gain':
+      goal = tdee + 500;
+      description = 'Профицит 500 ккал для набора массы';
+      break;
+    default:
+      goal = tdee;
+      description = 'Поддержание текущего веса';
+  }
+
+  display.textContent = goal;
+  desc.textContent = description;
+}
+
+function completeOnboarding() {
+  const weight = parseFloat(document.getElementById('inputWeight').value);
+  const height = parseFloat(document.getElementById('inputHeight').value);
+  const age = parseInt(document.getElementById('inputAge').value);
+  const gender = document.getElementById('inputGender').value;
+  const goalType = document.getElementById('inputGoalType').value;
+
+  profile.name = document.getElementById('inputName').value || 'Пользователь';
+  profile.gender = gender;
+  profile.age = age;
+  profile.weight = weight;
+  profile.height = height;
+  profile.goalType = goalType;
+  const activityEl = document.getElementById('inputActivity');
+  profile.activityLevel = activityEl && activityEl.value ? parseFloat(activityEl.value) : 1.55;
+
+  // Calculate calories if not done
+  if (!weight || !height || !age || !gender || !goalType) {
+    profile.goal = 2000;
+  } else {
+    const calculated = document.getElementById('calculatedCalories').textContent;
+    profile.goal = parseInt(calculated) || 2000;
+  }
+
+  profile.onboardingComplete = true;
+
+  // Set appData.goal to profile.goal
+  appData.goal = profile.goal;
+  
+  // Automatically calculate macros based on profile data
+  const macros = calculateMacroGoals();
+  profile.protGoal = macros.protGoal;
+  profile.fatGoal = macros.fatGoal;
+  profile.carbsGoal = macros.carbGoal;
+  profile.customMacrosSet = false; // Mark that these were auto-calculated
+  
+  saveProfile();
+  saveData();
+  checkOnboarding();
+  updateTotals();
+}
+
+// ============ MOCK FOODS ============
+const MOCK_FOODS = [
+  { name: 'Греческий йогурт с ягодами', cal: 185, prot: 14, fat: 5, carbs: 22 },
+  { name: 'Куриная грудка с рисом', cal: 487, prot: 42, fat: 8, carbs: 52 },
+  { name: 'Овсяная каша с бананом', cal: 312, prot: 9, fat: 5, carbs: 62 },
+  { name: 'Авокадо-тост с яйцом', cal: 380, prot: 16, fat: 22, carbs: 28 },
+  { name: 'Паста Болоньезе', cal: 521, prot: 28, fat: 18, carbs: 65 },
+  { name: 'Лосось с овощами гриль', cal: 395, prot: 36, fat: 19, carbs: 14 },
+  { name: 'Цезарь с курицей', cal: 340, prot: 24, fat: 19, carbs: 18 },
+  { name: 'Омлет с сыром и томатами', cal: 285, prot: 20, fat: 18, carbs: 8 },
+  { name: 'Борщ со сметаной', cal: 195, prot: 7, fat: 8, carbs: 24 },
+  { name: 'Творог с мёдом', cal: 220, prot: 18, fat: 5, carbs: 26 },
+  { name: 'Буррито с фасолью', cal: 445, prot: 18, fat: 14, carbs: 62 },
+  { name: 'Стейк с картофелем', cal: 580, prot: 45, fat: 24, carbs: 38 },
+  { name: 'Гречка с тушёной курицей', cal: 365, prot: 30, fat: 9, carbs: 42 },
+  { name: 'Сэндвич с тунцом', cal: 295, prot: 26, fat: 10, carbs: 22 },
+  { name: 'Пицца Маргарита (2 кусочка)', cal: 510, prot: 19, fat: 16, carbs: 72 },
+];
+
+function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ============ INIT ============
+document.addEventListener('DOMContentLoaded', () => {
+  // Clear localStorage if ?reset=1
+  if (window.location.search.includes('reset=1')) {
+    localStorage.clear();
+    window.location.href = window.location.pathname;
+  }
+
+  // Clean old data with images
+  try {
+    const oldData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    if (oldData.today && oldData.today.length > 0) {
+      oldData.today = oldData.today.map(item => {
+        const { img, ...rest } = item;
+        return rest;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(oldData));
+    }
+    // Also clean history
+    const oldHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    if (oldHistory.length > 0) {
+      const cleanedHistory = oldHistory.map(day => ({
+        ...day,
+        items: day.items.map(item => {
+          const { img, ...rest } = item;
+          return rest;
+        })
+      }));
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(cleanedHistory));
+    }
+  } catch (e) {
+    console.log('Cleanup error:', e);
+  }
+
+  // Load profile goal into appData if exists
+  if (profile && profile.goal) {
+    appData.goal = profile.goal;
+  }
+
+  // If profile exists but macros are missing, calculate them
+  if (profile && profile.onboardingComplete && 
+      (!profile.protGoal || !profile.fatGoal || !profile.carbsGoal)) {
+    const macros = calculateMacroGoals();
+    profile.protGoal = macros.protGoal;
+    profile.fatGoal = macros.fatGoal;
+    profile.carbsGoal = macros.carbGoal;
+    profile.customMacrosSet = false;
+    saveProfile();
+  }
+
+  checkOnboarding();
+  setHeaderDate();
+  ensureTodayExists();
+  renderTodayList();
+  updateTotals();
+  renderHistory();
+  renderRecommendations();
+  renderAchievements();
+
+  // Photo inputs
+  ['photoInput','photoInput2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', (e) => handleFileSelect(e, 'today'));
+  });
+});
+
+function setHeaderDate() {
+  const d = new Date();
+  const opts = { day: 'numeric', month: 'short' };
+  const el = document.getElementById('headerDate');
+  if (el) el.textContent = d.toLocaleDateString('ru-RU', opts);
+}
+
+function ensureTodayExists() {
+  const today = TODAY_KEY();
+  if (appData.date !== today) {
+    // Archive previous day
+    if (appData.date && appData.today && appData.today.length > 0) {
+      historyData.unshift({ date: appData.date, items: appData.today, goal: appData.goal });
+      if (historyData.length > 30) historyData.pop();
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+    }
+    appData.date = today;
+    appData.today = [];
+    saveData();
+  }
+}
+
+// ============ TABS ============
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('mainArea').scrollTop = 0;
+
+  if (name === 'recs') renderRecommendations();
+  if (name === 'history') renderHistory();
+}
+
+// ============ PHOTO HANDLING ============
+function handleFileSelect(e, context) {
+  const file = e.target.files[0];
+  console.log('File selected:', file);
+  if (!file) { console.log('No file'); return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    console.log('FileReader loaded, context:', context);
+    if (context === 'today') {
+      currentPhotoDataURL = ev.target.result;
+      console.log('Setting preview for today');
+      document.getElementById('previewImg').src = ev.target.result;
+      document.getElementById('photoInitial').classList.add('hidden');
+      document.getElementById('photoPreview').classList.remove('hidden');
+      document.getElementById('analysisResult').classList.add('hidden');
+    } else {
+      currentPhotoDataURL2 = ev.target.result;
+      document.getElementById('previewImg2').src = ev.target.result;
+      document.getElementById('photoSection2Initial').classList.add('hidden');
+      document.getElementById('photoSection2Preview').classList.remove('hidden');
+      document.getElementById('analysisResult2').classList.add('hidden');
+    }
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+// OpenRouter API Key
+const OPENROUTER_API_KEY = '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';
+
+async function analyzePhoto(context) {
+  const loader = document.getElementById('loaderOverlay');
+  loader.classList.remove('hidden');
+
+  const imageData = context === 'today' ? currentPhotoDataURL : currentPhotoDataURL2;
+
+  console.log('Starting analysis for context:', context);
+  console.log('Image data present:', !!imageData);
+
+  if (!imageData) {
+    console.error('No image data');
+    loader.classList.add('hidden');
+    showToast('Ошибка: изображение не загружено', 'error');
+    return;
+  }
+
+  try {
+    // Extract base64 from data URL
+    const base64Image = imageData.split(',')[1];
+    console.log('Base64 length:', base64Image.length);
+
+    console.log('Sending request to OpenRouter...');
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'HTTP-Referer': 'https://snapfitscan.app',
+        'X-Title': 'SnapFitScan'
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-4o-mini',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Ты - профессиональный нутрициолог с 10-летним опытом. Твоя задача - проанализировать фото еды и определить название блюда и его КБЖУ (калории, белки, жиры, углеводы).\n\nПравила:\n1. Если на фото НЕТ еды или блюда - верни: {"name": "error", "cal": 0, "prot": 0, "fat": 0, "carbs": 0, "message": "На фото не обнаружена еда. Пожалуйста, загрузите фото блюда."}\n2. Если не можешь определить блюдо - верни: {"name": "error", "cal": 0, "prot": 0, "fat": 0, "carbs": 0, "message": "Не удалось распознать блюдо. Попробуйте другое фото."}\n3. Для каждого приёма пищи учитывай типичный размер порции (150-300г для основных блюд)\n4. Если блюдо содержит соусы, гарниры или добавки - включи их в расчёт\n5. Ответь строго в формате JSON: {"name": "название", "cal": число, "prot": число, "fat": число, "carbs": число}\n\nПримеры:\n- Фото шашлыка: {"name": "Шашлык из свинины (200г)", "cal": 540, "prot": 38, "fat": 38, "carbs": 5}\n- Фото салата: {"name": "Оливье", "cal": 320, "prot": 12, "fat": 18, "carbs": 28}'
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`
+                }
+              }
+            ]
+          }
+        ]
+      })
+    });
+
+    console.log('Response status:', response.status);
+    const data = await response.json();
+    console.log('Response data:', data);
+
+    if (data.error) {
+      console.error('API Error:', data.error);
+      loader.classList.add('hidden');
+      showToast('Ошибка API: ' + data.error.message, 'error');
+      return;
+    }
+
+    if (!data.choices || !data.choices[0]) {
+      console.error('No choices in response');
+      loader.classList.add('hidden');
+      showToast('Ошибка: не получен ответ от ИИ', 'error');
+      return;
+    }
+
+    // Parse response
+    const content = data.choices[0].message.content;
+    console.log('Content:', content);
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    const foodData = jsonMatch ? JSON.parse(jsonMatch[0]) : getRandom(MOCK_FOODS);
+    console.log('Parsed food data:', foodData);
+
+    displayResult(context, foodData, imageData);
+
+  } catch (error) {
+    console.error('AI Error:', error);
+    loader.classList.add('hidden');
+    showToast('Ошибка распознавания: ' + error.message, 'error');
+  }
+}
+
+function displayResult(context, food, imageData) {
+  console.log('displayResult called with:', context, food);
+
+  // Hide loader first
+  const loader = document.getElementById('loaderOverlay');
+  if (loader) loader.classList.add('hidden');
+
+  // Check for error
+  if (food.name === 'error' || food.error) {
+    showToast(food.message || 'Не удалось распознать блюдо. Попробуйте загрузить фото еды.', 'error');
+    resetPhoto(context);
+    return;
+  }
+
+  if (context === 'today') {
+    currentResult = { ...food, img: imageData };
+    document.getElementById('resultImg').src = imageData;
+    document.getElementById('dishName').value = food.name;
+    document.getElementById('rCal').textContent = food.cal;
+    document.getElementById('rProt').textContent = food.prot + ' г';
+    document.getElementById('rFat').textContent = food.fat + ' г';
+    document.getElementById('rCarbs').textContent = food.carbs + ' г';
+    document.getElementById('photoPreview').classList.add('hidden');
+    document.getElementById('analysisResult').classList.remove('hidden');
+  } else {
+    currentResult2 = { ...food, img: imageData };
+    document.getElementById('resultImg2').src = imageData;
+    document.getElementById('dishName2').value = food.name;
+    document.getElementById('rCal2').textContent = food.cal;
+    document.getElementById('rProt2').textContent = food.prot + ' г';
+    document.getElementById('rFat2').textContent = food.fat + ' г';
+    document.getElementById('rCarbs2').textContent = food.carbs + ' г';
+    document.getElementById('photoSection2Preview').classList.add('hidden');
+    document.getElementById('analysisResult2').classList.remove('hidden');
+  }
+
+  // Calculate portion weight based on calories (assuming ~200g portion for typical meal)
+  const portionWeight = Math.round(food.cal * 0.4);
+  document.getElementById('portionWeightDisplay').textContent = portionWeight;
+
+  // Set up portion editor values
+  document.getElementById('editPortionWeight').value = portionWeight;
+  document.getElementById('editProt').value = food.prot;
+  document.getElementById('editFat').value = food.fat;
+  document.getElementById('editCarbs').value = food.carbs;
+  document.getElementById('editCal').value = food.cal;
+
+  // Calculate actual totals
+  recalcPortionFromWeight();
+
+  // Generate food rating and recommendation
+  const ratingData = generateFoodRating(food);
+  document.getElementById('ratingStars').textContent = ratingData.stars;
+  document.getElementById('foodRecommendation').textContent = ratingData.recommendation;
+
+  // Hide portion editor when new result is shown
+  document.getElementById('portionEditor').classList.add('hidden');
+  document.getElementById('editBtn').textContent = 'Изменить';
+}
+
+function resetPhoto(context) {
+  if (context === 'today') {
+    currentPhotoDataURL = null;
+    currentResult = null;
+    document.getElementById('photoInitial').classList.remove('hidden');
+    document.getElementById('photoPreview').classList.add('hidden');
+    document.getElementById('analysisResult').classList.add('hidden');
+  } else {
+    currentPhotoDataURL2 = null;
+    currentResult2 = null;
+    document.getElementById('photoSection2Initial').classList.remove('hidden');
+    document.getElementById('photoSection2Preview').classList.add('hidden');
+    document.getElementById('analysisResult2').classList.add('hidden');
+  }
+}
+
+// Generate food rating and recommendation based on nutritional values
+function generateFoodRating(food) {
+  const cal = food.cal || 0;
+  const prot = food.prot || 0;
+  const fat = food.fat || 0;
+  const carbs = food.carbs || 0;
+
+  let score = 0;
+  let recommendation = '';
+
+  // Calculate score based on nutritional balance
+  // Higher protein = better, moderate fat = good, moderate carbs
+  if (prot > 20) score += 2;
+  else if (prot > 10) score += 1;
+
+  if (fat < 15) score += 2;
+  else if (fat < 25) score += 1;
+
+  if (carbs < 30) score += 2;
+  else if (carbs < 50) score += 1;
+
+  // Generate stars
+  const stars = score >= 5 ? '★★★★★' : score >= 4 ? '★★★★☆' : score >= 3 ? '★★★☆☆' : score >= 2 ? '★★☆☆☆' : '★☆☆☆☆';
+
+  // Generate recommendation
+  if (score >= 5) {
+    recommendation = 'Отличный выбор! Высокое содержание белка и умеренная калорийность. Идеально для здорового питания.';
+  } else if (score >= 4) {
+    recommendation = 'Хороший выбор! Сбалансированный состав. Подходит для регулярного употребления.';
+  } else if (score >= 3) {
+    recommendation = 'Неплохой вариант. Умеренная калорийность, но следите за размером порции.';
+  } else if (score >= 2) {
+    recommendation = 'Довольно калорийное блюдо. Рекомендуется уменьшить порцию или выбрать более лёгкий гарнир.';
+  } else {
+    recommendation = 'Высококалорийное блюдо. Лучше употреблять в первой половине дня и в умеренных количествах.';
+  }
+
+  return { stars, recommendation };
+}
+
+// Toggle portion editor visibility
+function recalcPortionFromWeight() {
+  const weight = parseInt(document.getElementById('editPortionWeight').value) || 100;
+  const cal100 = parseInt(document.getElementById('editCal').value) || 0;
+  const prot100 = parseInt(document.getElementById('editProt').value) || 0;
+  const fat100 = parseInt(document.getElementById('editFat').value) || 0;
+  const carbs100 = parseInt(document.getElementById('editCarbs').value) || 0;
+
+  const ratio = weight / 100;
+
+  document.getElementById('portionWeightDisplay').textContent = weight;
+  document.getElementById('portionCal').textContent = Math.round(cal100 * ratio);
+  document.getElementById('portionProt').textContent = Math.round(prot100 * ratio);
+  document.getElementById('portionFat').textContent = Math.round(fat100 * ratio);
+  document.getElementById('portionCarbs').textContent = Math.round(carbs100 * ratio);
+}
+
+function togglePortionEditor() {
+  const editor = document.getElementById('portionEditor');
+  const editBtn = document.getElementById('editBtn');
+
+  if (editor.classList.contains('hidden')) {
+    editor.classList.remove('hidden');
+    editBtn.textContent = 'Сохранить';
+  } else {
+    // Update values from editor
+    updateFromPortionEditor();
+    editor.classList.add('hidden');
+    editBtn.textContent = 'Изменить';
+  }
+}
+
+// Update nutrition values from portion editor
+function updateFromPortionEditor() {
+  if (!currentResult) return;
+
+  const weight = parseInt(document.getElementById('editPortionWeight').value) || 100;
+  const newProt = parseFloat(document.getElementById('editProt').value) || currentResult.prot;
+  const newFat = parseFloat(document.getElementById('editFat').value) || currentResult.fat;
+  const newCarbs = parseFloat(document.getElementById('editCarbs').value) || currentResult.carbs;
+  const newCal = parseFloat(document.getElementById('editCal').value) || currentResult.cal;
+
+  // Calculate totals for the actual weight
+  const ratio = weight / 100;
+  const totalProt = Math.round(newProt * ratio);
+  const totalFat = Math.round(newFat * ratio);
+  const totalCarbs = Math.round(newCarbs * ratio);
+  const totalCal = Math.round(newCal * ratio);
+
+  currentResult = { ...currentResult, prot: newProt, fat: newFat, carbs: newCarbs, cal: newCal, weight: weight };
+
+  // Show TOTAL values (not per 100g)
+  document.getElementById('rProt').textContent = totalProt + ' г';
+  document.getElementById('rFat').textContent = totalFat + ' г';
+  document.getElementById('rCarbs').textContent = totalCarbs + ' г';
+  document.getElementById('rCal').textContent = totalCal;
+}
+
+// Save current day to history immediately
+function saveTodayToHistory() {
+  const today = TODAY_KEY();
+  const existingIndex = historyData.findIndex(h => h.date === today);
+  const dayData = {
+    date: today,
+    items: appData.today || [],
+    goal: appData.goal || 2000
+  };
+
+  if (existingIndex >= 0) {
+    historyData[existingIndex] = dayData;
+  } else {
+    historyData.unshift(dayData);
+    if (historyData.length > 30) historyData.pop();
+  }
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+}
+
+function addToToday() {
+  if (!currentResult) return;
+  const name = document.getElementById('dishName').value || currentResult.name;
+  const now = new Date();
+  const hour = now.getHours();
+  const mealType = getMealType(hour);
+  const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  const item = {
+    id: Date.now(),
+    name: name,
+    cal: currentResult.cal,
+    prot: currentResult.prot,
+    fat: currentResult.fat,
+    carbs: currentResult.carbs,
+    hasImg: !!currentResult.img,
+    img: currentResult.img || null,
+    mealType: mealType,
+    time: timeStr
+  };
+  appData.today.push(item);
+  saveData();
+  saveTodayToHistory(); // Save to history immediately
+  renderTodayList();
+  updateTotals();
+  updateAchievements();
+  resetPhoto('today');
+  // Haptic feedback
+  if (navigator.vibrate) navigator.vibrate(40);
+}
+
+function deleteItem(id) {
+  appData.today = appData.today.filter(i => i.id !== id);
+  saveData();
+  saveTodayToHistory(); // Update history when item deleted
+  renderTodayList();
+  updateTotals();
+}
+
+function clearToday() {
+  if (appData.today.length === 0) return;
+  appData.today = [];
+  saveData();
+  saveTodayToHistory(); // Update history
+  renderTodayList();
+  updateTotals();
+}
+
+// ============ RENDER TODAY ============
+// Meal emoji mapping
+const MEAL_EMOJIS = {
+  'завтрак': '🌅',
+  'обед': '☀️',
+  'ужин': '🌙',
+  'перекус': '🍎',
+  'default': '🍽️'
+};
+
+function getMealType(hour) {
+  if (hour >= 6 && hour < 11) return 'breakfast';
+  if (hour >= 11 && hour < 16) return 'lunch';
+  if (hour >= 16 && hour < 22) return 'dinner';
+  return 'snack';
+}
+
+const MEAL_DATA = {
+  'breakfast': { emoji: '🌅', name: 'Завтрак' },
+  'lunch': { emoji: '☀️', name: 'Обед' },
+  'dinner': { emoji: '🌙', name: 'Ужин' },
+  'snack': { emoji: '🍎', name: 'Перекус' }
+};
+
+function getMealEmoji(timeOrType) {
+  // If it's a known meal type, use it directly
+  if (MEAL_DATA[timeOrType]) return MEAL_DATA[timeOrType].emoji;
+  // Otherwise, detect from time
+  if (!timeOrType) return '🍽️';
+  const hour = parseInt(timeOrType.split(':')[0]);
+  const type = getMealType(hour);
+  return MEAL_DATA[type].emoji;
+}
+
+function getMealName(timeOrType) {
+  // If it's a known meal type, use it directly
+  if (MEAL_DATA[timeOrType]) return MEAL_DATA[timeOrType].name;
+  // Otherwise, detect from time
+  if (!timeOrType) return 'Приём пищи';
+  const hour = parseInt(timeOrType.split(':')[0]);
+  const type = getMealType(hour);
+  return MEAL_DATA[type].name;
+}
+
+function renderTodayList() {
+  const list = document.getElementById('todayList');
+  const empty = document.getElementById('emptyState');
+  if (!appData.today || appData.today.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  list.innerHTML = appData.today.map((item, i) => {
+    const mealType = item.mealType || item.time;
+    const mealEmoji = getMealEmoji(mealType);
+    const mealName = getMealName(mealType);
+    return `
+    <div class="food-card stagger-item rounded-2xl p-3 mb-2 flex items-center gap-3" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);">
+      <div class="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 text-2xl flex items-center justify-center">
+        ${item.img ? `<img src="${item.img}" class="w-full h-full object-cover">` : mealEmoji}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-0.5">
+          <span class="text-xs font-medium" style="color: var(--green);">${mealEmoji} ${mealName}</span>
+          <span class="text-xs" style="color: var(--muted);">· ${item.time || ''}</span>
+        </div>
+        <p class="font-display font-semibold text-sm truncate" style="color: var(--text);">${escHtml(item.name)}</p>
+        <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+          <span class="text-xs font-semibold" style="color: var(--green);">${item.cal} ккал</span>
+          <span class="text-xs" style="color: #60a5fa;">Б ${item.prot}г</span>
+          <span class="text-xs" style="color: #fb923c;">Ж ${item.fat}г</span>
+          <span class="text-xs" style="color: #a78bfa;">У ${item.carbs}г</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-1 flex-shrink-0">
+        <button onclick="openEditFood(${item.id})" class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(34,197,94,0.12); color: var(--green);" title="Редактировать">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button onclick="deleteItem(${item.id})" class="delete-btn w-8 h-8 rounded-full flex items-center justify-center" style="color: var(--muted);">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+  `}).join('');
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ============ TOTALS ============
+// Calculate daily protein/fat/carbs goals based on profile
+function calculateMacroGoals() {
+  const goal = (profile && profile.goal) ? profile.goal : (appData.goal || 2000);
+  let protGoal, fatGoal, carbGoal;
+
+  // Check if profile has custom macro goals set by user
+  if (profile && profile.customMacrosSet) {
+    protGoal = parseInt(profile.protGoal) || Math.round(goal * 0.25 / 4);
+    fatGoal = parseInt(profile.fatGoal) || Math.round(goal * 0.3 / 9);
+    carbGoal = parseInt(profile.carbsGoal) || Math.round(goal * 0.45 / 4);
+  } else if (profile && profile.weight && profile.height && profile.age && profile.gender) {
+    // Calculate based on anthropometric data
+    const w = parseFloat(profile.weight);
+    const h = parseFloat(profile.height);
+    const a = parseFloat(profile.age);
+    const isMale = profile.gender === 'male';
+    const goalType = profile.goalType;
+
+    // BMR calculation (Mifflin-St Jeor)
+    let bmr = (10 * w) + (6.25 * h) - (5 * a) + (isMale ? 5 : -161);
+
+    // Activity multiplier from profile (default moderate)
+    const actMult = (profile && profile.activityLevel) ? profile.activityLevel : 1.55;
+    bmr *= actMult;
+
+    // Adjust to goal calories
+    const targetCal = goal;
+
+    // Protein: 1.6-2.2g per kg of body weight based on activity and goals
+    let proteinPerKg = 2.0; // default for active person
+    
+    if (goalType === 'lose') proteinPerKg = 2.2; // higher protein for cutting
+    else if (goalType === 'gain') proteinPerKg = 1.8; // moderate protein for bulking
+    protGoal = Math.round(w * proteinPerKg);
+
+    // Fat: 20-35% of calories (adjust based on preferences)
+    const minFat = Math.round(0.8 * w); // minimum 0.8g per kg
+    const fatPct = goalType === 'lose' ? 0.25 : goalType === 'gain' ? 0.28 : 0.30; // adjust fat percentage based on goal
+    fatGoal = Math.max(Math.round((targetCal * fatPct) / 9), minFat);
+
+    // Carbs: remainder
+    carbGoal = Math.round((targetCal - (protGoal * 4) - (fatGoal * 9)) / 4);
+    
+    // Ensure positive carb values
+    if (carbGoal < 0) {
+      // Adjust fat and protein if carbs become negative
+      carbGoal = Math.round((targetCal * 0.4) / 4);
+      fatGoal = Math.round((targetCal * 0.3) / 9);
+      protGoal = Math.round((targetCal * 0.3) / 4);
+    }
+  } else {
+    // Default macro split: 25% protein, 30% fat, 45% carbs
+    protGoal = Math.round(goal * 0.25 / 4);
+    fatGoal = Math.round(goal * 0.3 / 9);
+    carbGoal = Math.round(goal * 0.45 / 4);
+  }
+
+  return { protGoal, fatGoal, carbGoal };
+}
+
+function updateTotals() {
+  const items = appData.today || [];
+  const totCal = items.reduce((s, i) => s + i.cal, 0);
+  const totProt = items.reduce((s, i) => s + i.prot, 0);
+  const totFat = items.reduce((s, i) => s + i.fat, 0);
+  const totCarbs = items.reduce((s, i) => s + i.carbs, 0);
+  
+  // Use profile goal if available, otherwise default to appData.goal or 2000
+  const goal = (profile && profile.goal) ? profile.goal : (appData.goal || 2000);
+  
+  // Sync appData.goal with profile.goal
+  if (profile && profile.goal) {
+    appData.goal = profile.goal;
+  }
+
+  const macros = calculateMacroGoals();
+
+  animateCounter('totalCalDisplay', totCal);
+  document.getElementById('totalProtein').textContent = totProt + '/' + macros.protGoal + ' г';
+  document.getElementById('totalFat').textContent = totFat + '/' + macros.fatGoal + ' г';
+  document.getElementById('totalCarbs').textContent = totCarbs + '/' + macros.carbGoal + ' г';
+  document.getElementById('goalDisplay').textContent = goal;
+
+  // Add tooltips for macros with daily goals
+  document.getElementById('totalProtein').title = 'Съедено: ' + totProt + ' г / Норма: ' + macros.protGoal + ' г';
+  document.getElementById('totalFat').title = 'Съедено: ' + totFat + ' г / Норма: ' + macros.fatGoal + ' г';
+  document.getElementById('totalCarbs').title = 'Съедено: ' + totCarbs + ' г / Норма: ' + macros.carbGoal + ' г';
+
+  const calPct = Math.min((totCal / goal) * 100, 100);
+  document.getElementById('calBar').style.width = calPct + '%';
+  document.getElementById('calBar').style.background = calPct > 100 ? 'linear-gradient(90deg,#ef4444,#dc2626)' : 'linear-gradient(90deg,#22c55e,#16a34a)';
+
+  document.getElementById('proteinBar').style.width = Math.min((totProt / macros.protGoal) * 100, 100) + '%';
+  document.getElementById('fatBar').style.width = Math.min((totFat / macros.fatGoal) * 100, 100) + '%';
+  document.getElementById('carbsBar').style.width = Math.min((totCarbs / macros.carbGoal) * 100, 100) + '%';
+  
+  // Update hero progress circle
+  const heroCircle = document.getElementById('heroProgressCircle');
+  const heroPct = document.getElementById('heroProgressPct');
+  const remainingEl = document.getElementById('remainingCal');
+  
+  if (heroCircle && heroPct) {
+    const circumference = 144.5; // Updated for 52px diameter circle
+    const progress = Math.min((totCal / goal), 1);
+    const offset = circumference - (progress * circumference);
+    heroCircle.style.strokeDashoffset = offset;
+    heroPct.textContent = Math.round(progress * 100) + '%';
+  }
+  
+  // Update remaining calories
+  if (remainingEl) {
+    const remaining = Math.max(goal - totCal, 0);
+    remainingEl.textContent = remaining;
+  }
+  
+  // Update date label in hero
+  const heroDateLabel = document.getElementById('heroDateLabel');
+  if (heroDateLabel) {
+    const now = new Date();
+    const days = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+    const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    const dayName = days[now.getDay()];
+    const date = now.getDate();
+    const month = months[now.getMonth()];
+    heroDateLabel.textContent = `${dayName}, ${date} ${month}`;
+  }
+  
+  // Update streak in header
+  updateStreakBadge();
+}
+
+function updateStreakBadge() {
+  const streakEl = document.getElementById('streakDays');
+  if (!streakEl) return;
+  
+  // Calculate streak
+  let streak = 0;
+  const sortedHistory = [...historyData].sort((a, b) => b.date.localeCompare(a.date));
+  
+  // Check if today has entries
+  const today = TODAY_KEY();
+  const todayHasEntries = (appData.today && appData.today.length > 0);
+  
+  if (todayHasEntries) {
+    streak = 1;
+    // Check previous days
+    for (let i = 0; i < sortedHistory.length; i++) {
+      const entry = sortedHistory[i];
+      if (entry.date === today) continue;
+      if (entry.items && entry.items.length > 0) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+  }
+  
+  streakEl.textContent = streak;
+}
+
+function animateCounter(id, target) {
+  const el = document.getElementById(id);
+  const start = parseInt(el.textContent) || 0;
+  const duration = 600;
+  const startTime = performance.now();
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(start + (target - start) * eased);
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+// ============ RECOMMENDATIONS ============
+function renderRecommendations() {
+  const items = appData.today || [];
+  const totCal = items.reduce((s, i) => s + i.cal, 0);
+  const totProt = items.reduce((s, i) => s + i.prot, 0);
+  const totFat = items.reduce((s, i) => s + i.fat, 0);
+  const totCarbs = items.reduce((s, i) => s + i.carbs, 0);
+  
+  // Use profile goal if available
+  const goal = (profile && profile.goal) ? profile.goal : (appData.goal || 2000);
+  
+  // Get macros based on profile/calculated goals
+  const macros = calculateMacroGoals();
+  const protGoal = macros.protGoal;
+  const fatGoal = macros.fatGoal;
+  const carbGoal = macros.carbGoal;
+
+  // Update circles
+  updateCircle('protCircle', totProt, protGoal, '#60a5fa');
+  updateCircle('fatCircle', totFat, fatGoal, '#fb923c');
+  updateCircle('carbCircle', totCarbs, carbGoal, '#a78bfa');
+
+  document.getElementById('protPct').textContent = Math.min(Math.round((totProt/protGoal)*100), 100) + '%';
+  document.getElementById('fatPct').textContent = Math.min(Math.round((totFat/fatGoal)*100), 100) + '%';
+  document.getElementById('carbPct').textContent = Math.min(Math.round((totCarbs/carbGoal)*100), 100) + '%';
+  document.getElementById('protGrams').textContent = `${totProt} / ${protGoal} г`;
+  document.getElementById('fatGrams').textContent = `${totFat} / ${fatGoal} г`;
+  document.getElementById('carbGrams').textContent = `${totCarbs} / ${carbGoal} г`;
+
+  // Status
+  const deficit = goal - totCal;
+  const statusEl = document.getElementById('statusCard');
+  let recs = [];
+
+  if (totCal === 0) {
+    document.getElementById('statusIcon').textContent = '🌅';
+    document.getElementById('statusTitle').textContent = 'Начните отслеживать!';
+    document.getElementById('statusDesc').textContent = 'Добавьте первый приём пищи, чтобы получить советы';
+    recs = [
+      { icon: '🥣', text: 'Начните день с завтрака. Овсянка с фруктами — отличный старт.', color: '#22c55e' },
+      { icon: '💧', text: 'Выпейте стакан воды перед первым приёмом пищи.', color: '#60a5fa' },
+      { icon: '⏰', text: 'Старайтесь есть каждые 3-4 часа для стабильного уровня энергии.', color: '#a78bfa' },
+    ];
+  } else if (deficit > 500) {
+    document.getElementById('statusIcon').textContent = '📉';
+    document.getElementById('statusTitle').textContent = `Недобор ${deficit} ккал`;
+    document.getElementById('statusDesc').textContent = 'Вам нужно есть больше для выполнения нормы';
+    recs = [];
+    if (totProt < protGoal * 0.7) recs.push({ icon: '🥩', text: `Добавь ${protGoal - totProt} г белка — возьми творог или куриную грудку.`, color: '#60a5fa' });
+    if (totCarbs < carbGoal * 0.6) recs.push({ icon: '🍌', text: `Углеводов мало. Банан или порция риса восполнят дефицит.`, color: '#a78bfa' });
+    recs.push({ icon: '🥑', text: `До нормы ещё ${deficit} ккал. Авокадо-тост или орехи — быстрый способ.`, color: '#22c55e' });
+  } else if (deficit < -200) {
+    document.getElementById('statusIcon').textContent = '⚠️';
+    document.getElementById('statusTitle').textContent = `Перебор ${Math.abs(deficit)} ккал`;
+    document.getElementById('statusDesc').textContent = 'Сегодня вы превысили дневную норму';
+    recs = [
+      { icon: '🚶', text: 'Прогулка 30 минут поможет сжечь около 150 ккал.', color: '#fb923c' },
+      { icon: '💧', text: 'Пейте больше воды — это снизит чувство голода.', color: '#60a5fa' },
+      { icon: '🥗', text: 'Если ещё голодны, выбирайте овощи без масла — они почти не дают калорий.', color: '#22c55e' },
+    ];
+  } else {
+    document.getElementById('statusIcon').textContent = '✅';
+    document.getElementById('statusTitle').textContent = 'Отличный прогресс!';
+    document.getElementById('statusDesc').textContent = `Осталось ${deficit} ккал до нормы. Всё идёт хорошо.`;
+    recs = [];
+    if (totProt < protGoal * 0.8) recs.push({ icon: '🥛', text: `Белков чуть мало — стакан кефира или горсть орехов помогут.`, color: '#60a5fa' });
+    if (totFat < fatGoal * 0.6) recs.push({ icon: '🫒', text: `Добавьте немного оливкового масла или авокадо для здоровых жиров.`, color: '#fb923c' });
+    recs.push({ icon: '🎯', text: `Цель почти выполнена! Держите темп до конца дня.`, color: '#22c55e' });
+  }
+
+  document.getElementById('recsList').innerHTML = recs.map((r, i) => `
+    <div class="rec-card stagger-item flex items-start gap-3">
+      <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-xl" style="background: ${r.color}18;">${r.icon}</div>
+      <p class="text-sm pt-1.5" style="color: var(--text);">${r.text}</p>
+    </div>
+  `).join('');
+}
+
+function updateCircle(id, value, max, color) {
+  const el = document.getElementById(id);
+  const circumference = 201;
+  const pct = Math.min(value / max, 1);
+  const offset = circumference - (pct * circumference);
+  el.style.strokeDashoffset = offset;
+  el.style.stroke = color;
+}
+
+// ============ HISTORY ============
+function getMockHistory() {
+  const days = [];
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    if (historyData.find(h => h.date === dateStr)) continue;
+    
+    // Use profile goal if exists, otherwise default
+    const goal = (profile && profile.goal) ? profile.goal : 2000;
+    
+    const cal = Math.floor(goal * (0.7 + Math.random() * 0.6)); // 70-130% of goal
+    const items = [];
+    let remaining = cal;
+    while (remaining > 100) {
+      const f = getRandom(MOCK_FOODS);
+      items.push({ ...f, id: Math.random(), img: null, time: '' });
+      remaining -= f.cal;
+    }
+    days.push({ date: dateStr, items, goal, isMock: true });
+  }
+  return days;
+}
+
+function renderHistory() {
+  // Only show real history data, no mock data
+  const allHistory = [...historyData].sort((a, b) => b.date.localeCompare(a.date));
+
+  // Streak
+  let streak = 0;
+  for (const d of allHistory) {
+    const cal = d.items.reduce((s, i) => s + i.cal, 0);
+    if (cal > 0) streak++; else break;
+  }
+  document.getElementById('streakBadge').textContent = `🔥 ${streak} дней`;
+
+  // Weekly bars
+  const weekDays = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const today = new Date();
+  const weekData = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const dayName = weekDays[d.getDay() === 0 ? 6 : d.getDay() - 1];
+    let cal = 0;
+    if (dateStr === TODAY_KEY()) {
+      cal = (appData.today || []).reduce((s, i) => s + i.cal, 0);
+    } else {
+      const found = allHistory.find(h => h.date === dateStr);
+      if (found) cal = found.items.reduce((s, i) => s + i.cal, 0);
+    }
+    weekData.push({ label: dayName, cal, isToday: i === 0 });
+  }
+  const maxCal = Math.max(...weekData.map(d => d.cal), 1);
+  document.getElementById('weekBars').innerHTML = weekData.map(d => {
+    const h = Math.round((d.cal / maxCal) * 64);
+    const color = d.isToday ? '#22c55e' : (d.cal > 0 ? '#3f3f46' : '#27272a');
+    return `<div class="flex-1 flex items-end justify-center">
+      <div class="w-full rounded-t-md transition-all" style="height: ${h}px; background: ${color}; min-height: 4px;"></div>
+    </div>`;
+  }).join('');
+  document.getElementById('weekLabels').innerHTML = weekData.map(d =>
+    `<div class="flex-1 text-center text-xs ${d.isToday ? 'font-bold' : ''}" style="color: ${d.isToday ? '#22c55e' : '#52525b'};">${d.label}</div>`
+  ).join('');
+
+  // History list
+  const listEl = document.getElementById('historyList');
+  if (allHistory.length === 0) {
+    listEl.innerHTML = `<div class="text-center py-8" style="color: var(--muted);">История пока пуста</div>`;
+    return;
+  }
+
+  listEl.innerHTML = allHistory.slice(0, 14).map((day, idx) => {
+    const cal = day.items.reduce((s, i) => s + i.cal, 0);
+    const prot = day.items.reduce((s, i) => s + i.prot, 0);
+    const fat = day.items.reduce((s, i) => s + i.fat, 0);
+    const carbs = day.items.reduce((s, i) => s + i.carbs, 0);
+    const goal = day.goal || 2000;
+    const pct = Math.min(Math.round((cal / goal) * 100), 100);
+    const dateLabel = formatHistoryDate(day.date);
+    const statusColor = cal > goal * 1.1 ? '#ef4444' : cal < goal * 0.6 ? '#fb923c' : '#22c55e';
+
+    // Build items list HTML
+    const itemsHtml = day.items.map(item => `
+      <div class="flex items-center justify-between py-2 px-3 rounded-lg" style="background: var(--surface2);">
+        <div class="flex items-center gap-2">
+          ${item.img ? `<img src="${item.img}" class="w-6 h-6 rounded object-cover">` : `<span>${item.hasImg ? '🍽️' : '🥗'}</span>`}
+          <span class="text-sm" style="color: var(--text);">${escHtml(item.name)}</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-semibold" style="color: var(--green);">${item.cal} ккал</span>
+          <span class="text-xs" style="color: var(--muted);">${item.time || ''}</span>
+        </div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="history-card rounded-2xl stagger-item" style="background: var(--surface); border: 1px solid var(--border); overflow: hidden;">
+        <div class="p-4 cursor-pointer" onclick="toggleHistoryDay(${idx})">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <p class="font-display font-semibold text-sm">${dateLabel}</p>
+              <p class="text-xs mt-0.5" style="color: var(--muted);">${day.items.length} приёмов пищи</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="text-right">
+                <span class="font-display font-bold text-lg" style="color: ${statusColor};">${cal}</span>
+                <span class="text-xs" style="color: var(--muted);"> ккал</span>
+              </div>
+              <span class="history-arrow text-lg" id="arrow-${idx}" style="color: var(--muted);">▼</span>
+            </div>
+          </div>
+          <div class="progress-track h-1.5 mt-2">
+            <div class="progress-fill h-1.5" style="background: ${statusColor}; width: ${pct}%;"></div>
+          </div>
+          <div class="flex gap-4 mt-2">
+            <span class="text-xs" style="color: #60a5fa;">Б ${prot}г</span>
+            <span class="text-xs" style="color: #fb923c;">Ж ${fat}г</span>
+            <span class="text-xs" style="color: #a78bfa;">У ${carbs}г</span>
+            <span class="text-xs ml-auto" style="color: var(--muted);">цель ${goal}</span>
+          </div>
+        </div>
+        <div id="day-items-${idx}" class="hidden px-4 pb-4 space-y-2">
+          ${itemsHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleHistoryDay(idx) {
+  const itemsEl = document.getElementById('day-items-' + idx);
+  const arrowEl = document.getElementById('arrow-' + idx);
+  if (!itemsEl) return;
+
+  if (itemsEl.classList.contains('hidden')) {
+    itemsEl.classList.remove('hidden');
+    arrowEl.textContent = '▲';
+  } else {
+    itemsEl.classList.add('hidden');
+    arrowEl.textContent = '▼';
+  }
+}
+
+function formatHistoryDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (dateStr === today.toISOString().split('T')[0]) return 'Сегодня';
+  if (dateStr === yesterday.toISOString().split('T')[0]) return 'Вчера';
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
+
+// ============ ACHIEVEMENTS ============
+function renderAchievements() {
+  const ach = achievements;
+
+  const achList = document.getElementById('achievementsList');
+  if (!achList) return;
+
+  const items = [
+    { icon: '🍽️', title: 'Первый приём', desc: 'Добавьте первый приём пищи', unlocked: ach.firstMeal },
+    { icon: '🔥', title: 'Серия 7 дней', desc: '7 дней подряд', unlocked: ach.weekStreak >= 7 },
+    { icon: '🎯', title: 'Цель достигнута', desc: 'Достигли дневной цели', unlocked: ach.goalReached > 0 },
+    { icon: '⭐', title: 'Идеальный день', desc: '100% КБЖУ выполнено', unlocked: ach.perfectDays > 0 }
+  ];
+
+  achList.innerHTML = items.map(a => `
+    <div class="p-3 rounded-xl text-center ${a.unlocked ? '' : 'opacity-40'}" style="background: var(--surface2);">
+      <div class="text-2xl mb-1">${a.icon}</div>
+      <div class="font-semibold text-sm">${a.title}</div>
+      <div class="text-xs" style="color: var(--muted);">${a.desc}</div>
+    </div>
+  `).join('');
+}
+
+// ============ STATS ============
+function renderStats() {
+  // Calculate weekly stats
+  const weekData = [];
+  const today = new Date();
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const dayData = historyData.find(h => h.date === dateStr);
+    const items = dayData ? dayData.items : [];
+    const cal = items.reduce((s, i) => s + i.cal, 0);
+    const prot = items.reduce((s, i) => s + i.prot, 0);
+    const fat = items.reduce((s, i) => s + i.fat, 0);
+    const carbs = items.reduce((s, i) => s + i.carbs, 0);
+    weekData.push({ cal, prot, fat, carbs });
+  }
+
+  // Averages
+  const avg = (arr, key) => Math.round(arr.reduce((s, d) => s + d[key], 0) / arr.length);
+
+  document.getElementById('weekAvgCal').textContent = avg(weekData, 'cal');
+  document.getElementById('weekAvgProt').textContent = avg(weekData, 'prot') + 'г';
+  document.getElementById('weekAvgFat').textContent = avg(weekData, 'fat') + 'г';
+  document.getElementById('weekAvgCarbs').textContent = avg(weekData, 'carbs') + 'г';
+
+  // Streak stats
+  document.getElementById('statStreak').textContent = achievements.weekStreak;
+  document.getElementById('statPerfectDays').textContent = achievements.perfectDays;
+  document.getElementById('statTotalDays').textContent = achievements.totalDays;
+
+  renderAchievements();
+}
+
+function updateAchievements() {
+  // First meal
+  if (!achievements.firstMeal) {
+    achievements.firstMeal = true;
+  }
+
+  // Calculate today's total
+  const items = appData.today || [];
+  const totCal = items.reduce((s, i) => s + i.cal, 0);
+  const goal = appData.goal || 2000;
+
+  // Goal reached
+  if (totCal >= goal && !achievements.goalReached) {
+    achievements.goalReached = 1;
+  } else if (totCal >= goal) {
+    achievements.goalReached++;
+  }
+
+  // Update streak
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  if (historyData.find(h => h.date === yesterdayStr && h.items.length > 0)) {
+    achievements.weekStreak++;
+  } else if (!historyData.find(h => h.date === today && h.items.length > 0)) {
+    achievements.weekStreak = 0;
+  }
+
+  achievements.totalDays++;
+
+  // Perfect day (all macros completed)
+  // Use calculated macro goals instead of hardcoded formula
+  const macros = calculateMacroGoals();
+  const protGoal = macros.protGoal;
+  const fatGoal = macros.fatGoal;
+  const carbGoal = macros.carbGoal;
+  
+  const totProt = items.reduce((s, i) => s + i.prot, 0);
+  const totFat = items.reduce((s, i) => s + i.fat, 0);
+  const totCarbs = items.reduce((s, i) => s + i.carbs, 0);
+
+  if (totCal >= goal && totProt >= protGoal && totFat >= fatGoal && totCarbs >= carbGoal) {
+    achievements.perfectDays++;
+  }
+
+  saveProfile();
+}
+
+// ============ PROFILE ============
+function loadProfileToEdit() {
+  document.getElementById('editName').value = profile.name || '';
+  document.getElementById('editWeight').value = profile.weight || '';
+  document.getElementById('editHeight').value = profile.height || '';
+  document.getElementById('editAge').value = profile.age || '';
+  document.getElementById('editGender').value = profile.gender || '';
+  document.getElementById('editGoal').value = profile.goal || 2000;
+  document.getElementById('editActivity').value = profile.activityLevel || '1.55';
+  document.getElementById('editProtGoal').value = profile.protGoal || '';
+  document.getElementById('editFatGoal').value = profile.fatGoal || '';
+  document.getElementById('editCarbsGoal').value = profile.carbsGoal || '';
+
+  document.getElementById('profileName').textContent = profile.name || 'Пользователь';
+
+  let stats = [];
+  if (profile.weight) stats.push(profile.weight + ' кг');
+  if (profile.height) stats.push(profile.height + ' см');
+  if (profile.age) stats.push(profile.age + ' лет');
+  document.getElementById('profileStats').textContent = stats.length ? stats.join(' • ') : 'Настройте профиль';
+
+  // Show macro goals in profile card
+  const macrosEl = document.getElementById('profileMacroStats');
+  if (macrosEl) {
+    if (profile.protGoal || profile.fatGoal || profile.carbsGoal) {
+      const customIndicator = profile.customMacrosSet ? '' : ' (авто)';
+      macrosEl.innerHTML = `
+        <span style="color: #60a5fa;">Б: ${profile.protGoal || 0}г${customIndicator}</span> •
+        <span style="color: #fb923c;">Ж: ${profile.fatGoal || 0}г${customIndicator}</span> •
+        <span style="color: #a78bfa;">У: ${profile.carbsGoal || 0}г${customIndicator}</span>
+      `;
+    } else {
+      macrosEl.textContent = 'БЖУ не заданы';
+    }
+  }
+}
+
+function saveProfileEdit() {
+  profile.name = document.getElementById('editName').value || 'Пользователь';
+  profile.weight = document.getElementById('editWeight').value;
+  profile.height = document.getElementById('editHeight').value;
+  profile.age = document.getElementById('editAge').value;
+  profile.gender = document.getElementById('editGender').value;
+  profile.goal = parseInt(document.getElementById('editGoal').value) || 2000;
+  profile.activityLevel = parseFloat(document.getElementById('editActivity').value) || 1.55;
+  profile.protGoal = parseInt(document.getElementById('editProtGoal').value) || '';
+  profile.fatGoal = parseInt(document.getElementById('editFatGoal').value) || '';
+  profile.carbsGoal = parseInt(document.getElementById('editCarbsGoal').value) || '';
+
+  // Check if user manually entered macros (if all are filled, mark as custom)
+  if (document.getElementById('editProtGoal').value && 
+      document.getElementById('editFatGoal').value && 
+      document.getElementById('editCarbsGoal').value) {
+    profile.customMacrosSet = true;
+  } else if (!(document.getElementById('editProtGoal').value || 
+               document.getElementById('editFatGoal').value || 
+               document.getElementById('editCarbsGoal').value)) {
+    // If all fields are empty, revert to auto-calculation
+    profile.customMacrosSet = false;
+    const macros = calculateMacroGoals();
+    profile.protGoal = macros.protGoal;
+    profile.fatGoal = macros.fatGoal;
+    profile.carbsGoal = macros.carbGoal;
+  } else {
+    // If partially filled, also revert to auto-calculation
+    profile.customMacrosSet = false;
+    const macros = calculateMacroGoals();
+    profile.protGoal = macros.protGoal;
+    profile.fatGoal = macros.fatGoal;
+    profile.carbsGoal = macros.carbGoal;
+  }
+
+  appData.goal = profile.goal;
+  saveProfile();
+  saveData();
+  updateTotals();
+  loadProfileToEdit();
+
+  if (navigator.vibrate) navigator.vibrate(40);
+  showToast('✅ Профиль сохранён', 'success');
+}
+
+function resetProfile() {
+  if (confirm('Сбросить все данные? Это удалит историю и достижения.')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+// ============ TAB HANDLER ============
+// Fixed: no fragile re-assignment pattern
+const _origSwitchTab = switchTab;
+switchTab = function(name, btn) {
+  _origSwitchTab(name, btn);
+  if (name === 'stats') renderStats();
+  if (name === 'profile') loadProfileToEdit();
+};
+
+// ============ TOAST NOTIFICATIONS ============
+function showToast(message, type = 'default') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.animation = 'toastOut 0.3s ease forwards';
+    setTimeout(() => toast.remove(), 300);
+  }, 2200);
+}
+
+// ============ MANUAL ADD ============
+function openManualAdd() {
+  document.getElementById('manualAddModal').classList.remove('hidden');
+  document.getElementById('manualDishName').focus();
+
+  // Set current time
+  const now = new Date();
+  const timeStr = now.toTimeString().slice(0, 5);
+  document.getElementById('manualTime').value = timeStr;
+
+  // Default meal type based on current hour (but user must confirm it)
+  const hour = now.getHours();
+  document.getElementById('manualMealType').value = getMealType(hour);
+
+  // Reset fields
+  document.getElementById('manualDishName').value = '';
+  document.getElementById('manualWeight').value = '100';
+  document.getElementById('manualCal').value = '0';
+  document.getElementById('manualProt').value = '0';
+  document.getElementById('manualFat').value = '0';
+  document.getElementById('manualCarbs').value = '0';
+}
+
+function closeManualAdd(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('manualAddModal').classList.add('hidden');
+}
+
+// ============ EDIT FOOD ITEM ============
+// _editFoodBase stores the per-100g base values for weight recalc
+let _editFoodBase = null;
+
+function openEditFood(id) {
+  const item = appData.today.find(i => i.id === id);
+  if (!item) return;
+
+  // Store base per-100g values (we stored total cal/prot etc, so derive per-100g via stored weight or assume 100g)
+  const baseWeight = item.weight || 100;
+  _editFoodBase = {
+    id: item.id,
+    cal100: Math.round((item.cal / baseWeight) * 100),
+    prot100: Math.round((item.prot / baseWeight) * 100),
+    fat100: Math.round((item.fat / baseWeight) * 100),
+    carbs100: Math.round((item.carbs / baseWeight) * 100),
+    currentWeight: baseWeight
+  };
+
+  document.getElementById('editFoodItemId').value = item.id;
+  document.getElementById('editFoodName').value = item.name;
+  document.getElementById('editFoodMealType').value = item.mealType || 'snack';
+
+  let timeValue = item.time || '';
+  if (timeValue && timeValue.includes(':')) {
+    const parts = timeValue.split(':');
+    timeValue = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');
+  }
+  document.getElementById('editFoodTime').value = timeValue;
+  document.getElementById('editFoodWeight').value = baseWeight;
+  document.getElementById('editFoodCal').value = item.cal;
+  document.getElementById('editFoodProt').value = item.prot;
+  document.getElementById('editFoodFat').value = item.fat;
+  document.getElementById('editFoodCarbs').value = item.carbs;
+
+  document.getElementById('editFoodModal').classList.remove('hidden');
+}
+
+function recalcEditFood() {
+  if (!_editFoodBase) return;
+  const weight = parseInt(document.getElementById('editFoodWeight').value) || 100;
+  const ratio = weight / 100;
+  document.getElementById('editFoodCal').value = Math.round(_editFoodBase.cal100 * ratio);
+  document.getElementById('editFoodProt').value = Math.round(_editFoodBase.prot100 * ratio);
+  document.getElementById('editFoodFat').value = Math.round(_editFoodBase.fat100 * ratio);
+  document.getElementById('editFoodCarbs').value = Math.round(_editFoodBase.carbs100 * ratio);
+}
+
+function closeEditFood(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('editFoodModal').classList.add('hidden');
+  _editFoodBase = null;
+}
+
+function saveEditFood() {
+  const id = parseInt(document.getElementById('editFoodItemId').value);
+  const idx = appData.today.findIndex(i => i.id === id);
+  if (idx < 0) return;
+
+  const weight = parseInt(document.getElementById('editFoodWeight').value) || 100;
+  appData.today[idx].name = document.getElementById('editFoodName').value.trim() || appData.today[idx].name;
+  appData.today[idx].mealType = document.getElementById('editFoodMealType').value;
+  appData.today[idx].time = document.getElementById('editFoodTime').value;
+  appData.today[idx].cal = parseInt(document.getElementById('editFoodCal').value) || 0;
+  appData.today[idx].prot = parseInt(document.getElementById('editFoodProt').value) || 0;
+  appData.today[idx].fat = parseInt(document.getElementById('editFoodFat').value) || 0;
+  appData.today[idx].carbs = parseInt(document.getElementById('editFoodCarbs').value) || 0;
+  appData.today[idx].weight = weight;
+
+  saveData();
+  saveTodayToHistory();
+  renderTodayList();
+  updateTotals();
+  closeEditFood();
+  showToast('✅ Запись обновлена', 'success');
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+// ============ EDIT MEAL TYPE ============
+function openEditMealType(id) {
+  const item = appData.today.find(i => i.id === id);
+  if (!item) return;
+
+  document.getElementById('editMealItemId').value = item.id;
+  document.getElementById('editMealType').value = item.mealType || 'snack';
+
+  let timeValue = item.time;
+  if (item.time && item.time.includes(':')) {
+    const parts = item.time.split(':');
+    if (parts.length >= 2) {
+      timeValue = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');
+    }
+  }
+  document.getElementById('editMealTime').value = timeValue || '';
+
+  document.getElementById('editMealTypeModal').classList.remove('hidden');
+}
+
+function closeEditMealType(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('editMealTypeModal').classList.add('hidden');
+}
+
+function saveEditMealType() {
+  const id = parseInt(document.getElementById('editMealItemId').value);
+  const mealType = document.getElementById('editMealType').value;
+  const time = document.getElementById('editMealTime').value;
+
+  const itemIndex = appData.today.findIndex(i => i.id === id);
+  if (itemIndex >= 0) {
+    appData.today[itemIndex].mealType = mealType;
+    appData.today[itemIndex].time = time;
+
+    saveData();
+    saveTodayToHistory();
+    renderTodayList();
+  }
+
+  closeEditMealType();
+}
+
+// AI Prediction using OpenRouter
+let predictTimeout = null;
+async function predictKBJU(foodName) {
+  if (!foodName || foodName.length < 2) return;
+
+  clearTimeout(predictTimeout);
+  predictTimeout = setTimeout(async () => {
+    const predictingEl = document.getElementById('aiPredicting');
+    predictingEl.classList.remove('hidden');
+
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'https://snapfitscan.app',
+          'X-Title': 'SnapFitScan'
+        },
+        body: JSON.stringify({
+          model: 'openai/gpt-4o-mini',
+          messages: [
+            {
+              role: 'user',
+              content: `Ты - профессиональный нутрициолог. Определи КБЖУ блюда "${foodName}" на 100г. Ответь строго в формате JSON: {"cal": число, "prot": число, "fat": число, "carbs": число}`
+            }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      const content = data.choices[0].message.content;
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+
+      if (jsonMatch) {
+        const foodData = JSON.parse(jsonMatch[0]);
+        document.getElementById('manualCal').value = Math.round(foodData.cal || 0);
+        document.getElementById('manualProt').value = Math.round(foodData.prot || 0);
+        document.getElementById('manualFat').value = Math.round(foodData.fat || 0);
+        document.getElementById('manualCarbs').value = Math.round(foodData.carbs || 0);
+      }
+    } catch (error) {
+      console.error('Prediction error:', error);
+    } finally {
+      predictingEl.classList.add('hidden');
+    }
+  }, 800);
+}
+
+function addManualFood() {
+  const name = document.getElementById('manualDishName').value.trim();
+  const weight = parseInt(document.getElementById('manualWeight').value) || 100;
+  const cal100 = parseInt(document.getElementById('manualCal').value) || 0;
+  const prot100 = parseInt(document.getElementById('manualProt').value) || 0;
+  const fat100 = parseInt(document.getElementById('manualFat').value) || 0;
+  const carbs100 = parseInt(document.getElementById('manualCarbs').value) || 0;
+  const mealTypeSelect = document.getElementById('manualMealType').value;
+  let time = document.getElementById('manualTime').value;
+
+  if (!name) {
+    showToast('Введите название блюда', 'error');
+    return;
+  }
+
+  // Use selected meal type directly (no auto)
+  const finalMealType = mealTypeSelect;
+
+  // Format time for display
+  const timeDisplay = time ? time : new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+  const ratio = weight / 100;
+  const item = {
+    id: Date.now(),
+    name: name,
+    cal: Math.round(cal100 * ratio),
+    prot: Math.round(prot100 * ratio),
+    fat: Math.round(fat100 * ratio),
+    carbs: Math.round(carbs100 * ratio),
+    hasImg: false,
+    mealType: finalMealType,
+    weight: weight,
+    time: timeDisplay
+  };
+
+  appData.today.push(item);
+  saveData();
+  saveTodayToHistory();
+  renderTodayList();
+  updateTotals();
+  updateAchievements();
+  closeManualAdd();
+  showToast('✅ Блюдо добавлено', 'success');
+
+  if (navigator.vibrate) navigator.vibrate(40);
+}
+
+// ============ PWA SERVICE WORKER ============
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
